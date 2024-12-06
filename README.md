@@ -1,4 +1,4 @@
-# SV4DA
+# SVBench
 
 <img src="./README.assets/SvBench.pdf" alt="SvBench" style="zoom: 130%;"/>
 
