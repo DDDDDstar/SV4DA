@@ -52,10 +52,9 @@ To use **_SvBench_**, users need to download all the codes to their project dire
 ```
 pip3 install -r requirements.txt
 ```
-这句话放这里有点不合适的感觉，应该要先完成后面的任务设定，以及算法参数设定，才有对应任务的py文件，然后去import sv_calc函数来计算任务中的sv?
-After this, to run the three benchmark tasks, you need to `from svbench import sv_calc` in your own python file and run the `sv_calc` function with relevant parameters.
 
-## DA Task Preparation and Cooperative Game Modeling
+
+### DA Task Preparation and Cooperative Game Modeling
 
 Before using **_SvBench_** to implement a specific SV computing algorithm, users need to properly prepare their targeted DA task, specifying the player and utility function in the task for modeling the task as a cooperative game. Guidelines for cooperative game modelling can be found in our [survey paper](https://arxiv.org/abs/2412.01460).
 
@@ -82,9 +81,9 @@ In this repository, we show three typical DA tasks, namely **Result Interpretati
 -   The DV tasks on Iris and Wine use SV to evaluate the importance of 120 iris plants and 142 wine samples to improve the classification accuracy.
 -   The FL tasks on MNIST and Cifar-10 distribute the two datasets to 10 devices, using SV to valuate the local models trained by those devices for the higher accuracy in handwritten digits classification and object recognition.
 
-## SV Computation
+### SV Computation
 
-Given the well-prepared DA task, users then need to specify the following parameters used by **_SvBench_** for implement their specific SV computing algorithm in the prepared task:
+Given a well-prepared DA task, users then need to specify the following parameters used by **_SvBench_** for implement their specific SV computing algorithm in the prepared task:
 
 |         Parameter          |                       Scope                        | Description                                                                                                                                                                                                                                                                             | Default  | Type  |
 | :------------------------: | :------------------------------------------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------: | ----- |
@@ -101,9 +100,12 @@ Given the well-prepared DA task, users then need to specify the following parame
 |        manual_seed         |                    $\mathbb{N}$                    | Random seed used throughout the entire SV computing process.    |    42    | int   |
 |    num_parallel_threads    |                   $\mathbb{N}^+$                   | The number of threads used for parallel computing. |    1     | int   |
 
-Here, we provide the examples for running the typical SV computing algorithms in the aforementioned DA tasks.
 
-(1) run the base algorithm, **MC**, in six DA tasks.
+
+After the above steps, users can import the `sv_calc` function into their own python file through the command `from svbench import sv_calc` and invoke the `sv_calc` function with the specified parameters for obtaining SV from **_SvBench_**. 
+Here, we provide some examples of invoking `sv_calc`.
+
+(1) run the base algorithm, **MC**, in six example DA tasks.
 
 ```python
 sv_calc(task='RI', dataset='iris', algo='MC')
@@ -138,6 +140,8 @@ sv_calc(task='FL', dataset='cifar', algo='MC', optimization_strategy='TC+GA+TSS'
 sv_calc(task='DV', dataset='iris', algo='MC', privacy_protection_measure='DP', privacy_protection_level=0.5)
 ```
 
+## Extend **_SvBench_**
+
 To run <u>user-specific task</u>, there are the following parameters, which users could choose to set to remake the corresponding module:
 
 |         Parameter          |           Scope           | Introduction                                                                                                                                                                | Remade modules    | Type     |
@@ -151,6 +155,8 @@ To run <u>user-specific task</u>, there are the following parameters, which user
 | privacy_protection_measure |             -             | The function for privacy protection for the results.                                                                                                                        |                   | function |
 |                            |                           |                                                                                                                                                                             |                   |          |
 |                            |                           |                                                                                                                                                                             |                   |          |
+
+## Experiments
 
 ## Citing **_SvBench_**
 ```
