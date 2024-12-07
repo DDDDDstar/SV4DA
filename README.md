@@ -6,7 +6,7 @@
 
 As shown in the figure, ***SvBench***  is composed of a config loader, a sampler, a utility calculator, a convergence checker, and an output aggregator for computing SV by iterative rounds. A round of SV calculation is conducted starting from the sampler and ending at the convergence checker.  Once the convergence criterion is not met, another round will be initiated as demonstrated in the figure (with dashed arrow). We summarize the function of each module in the following table. Using these modules, ***SvBench*** implements five base SV calculation algorithms (**MC**, **RE**, **MLE**, **GT**, and **CP**) and several hybrid algorithms, each combining one base algorithm with a specific efficiency optimization. For more detailed introduction of SV computing techniques, please refer to our [survey paper](https://arxiv.org/abs/2412.01460). 
 
-|  Module | Description | Main Techniques Implemented in the Module |
+|  Module | Description | Main Techniques in the Module |
 | :----: | ----------- | ------------ |
 | **configuration loader** | Load the SV computing parameters specified by the users| / |
 | **sampler** | Generate the coalitions or permutations of players based on the configured sampling strategy| Random Sampling, Stratified Sampling, Antithetic Sampling |
