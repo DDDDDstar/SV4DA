@@ -17,14 +17,14 @@ As shown in the figure, ***SvBench***  is composed of a config loader, a sampler
 Below, we show three typical DA tasks, namely **Result Interpretation(RI)**, **Data Valuation(DV)**, and **Federated Learning(FL)**, as example use cases and present how to use ***SvBench***  to implement different SV computing algorithms in these tasks.
 The datasets, player set, and utility function used by each task are summarized in the following:
 
-|  Datasets  | Number of Training Samples | Number of Test Samples | Number of Features for Each Sample | Number of Classes |
+|  Dataset | # Training Data Tuples | # Test Data Tuples | # Features for Each Tuple | # Classes |
 | :----: | --------- | --------- | --------- | --------- |
 | **Iris** | 120  | 30 | 4 | 3|
 | **Wine** | 142 | 36| 13 |3|
 | **MNIST** | 60,000   | 10,000  | 1 x 28 x 28 |10|
 | **Cifar-10** |  50,000  | 10,000   |  3 x 32 x 32 |10|
 
-|  Task  | Datasets             | Player       | Utility       | Model               |
+|  Task  | Dataset             | Player       | Utility       | Model               |
 | :----: | -------------------- | ------------ | ------------- | ------------------- |
 | **RI** | *Iris*    | data feature （n=4）  | Model Output  | *Multilayer Perceptron* |
 | **RI** | *Wine*      | data feature （n=13） | Model Output  | *Multilayer Perceptron* |
