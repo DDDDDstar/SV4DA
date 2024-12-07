@@ -117,7 +117,7 @@ class Task():
                 manual_seed=self.manual_seed,
                 GA=self.GA, TSS=self.TSS,
                 parallel_threads_num=self.parallel_threads_num)
-            return FL.utility_computation
+            return RI.utility_computation
         else:
             return utility_function_api
 

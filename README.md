@@ -1,6 +1,6 @@
 # SV4DA
 
-<img src="./README.assets/SvBench.pdf" alt="SvBench" style="zoom: 130%;"/>
+<img src="./README.assets/SvBench.png" alt="SvBench" style="zoom:50%;" />
 
 ***SvBench*** is a free, powerful benchmark providing a series of accurate or approximate calculation algorithms of Shapley Value(SV) for data analysis(DA). As shown in the figure, it provides a high-level calculation architecture, consisting of the config loader, the sampler, the utility calculator, the convergence checker, and the output aggregator, to calculate Shapley Value for different task targets.
 
