@@ -120,6 +120,7 @@ class Task():
                 GA=self.GA, TSS=self.TSS,
                 parallel_threads_num=self.parallel_threads_num)
             return RI.utility_computation
+<<<<<<< HEAD
         elif self.task == 'DSV':
             DSV = dataset_valuation.DSV(
                 dataset=self.dataset,
@@ -127,6 +128,8 @@ class Task():
                 GA=self.GA, TSS=self.TSS,
                 parallel_threads_num=self.parallel_threads_num)
             return DSV.utility_computation
+=======
+>>>>>>> 2dbe9f9dacfbc9c5d4e197c65978cd7a98eac396
         else:
             return utility_function_api
 
