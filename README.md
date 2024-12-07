@@ -6,8 +6,8 @@
 
 As shown in the figure, ***SvBench***  is composed of a config loader, a sampler, a utility calculator, a convergence checker, and an output aggregator for computing SV by iterative rounds. A round of SV calculation is conducted starting from the sampler and ending at the convergence checker.  Once the convergence criterion is not met, another round will be initiated as demonstrated in the figure (with dashed arrow). We summarize the function of each module in the following table. Using these modules, ***SvBench*** implements five base SV calculation algorithms (**MC**, **RE**, **MLE**, **GT**, and **CP**) and several hybrid algorithms, each combining one base algorithm with a specific efficiency optimization. For more detailed introduction of SV computing techniques, please refer to our [survey paper](https://arxiv.org/abs/2412.01460). 
 
-|  Module | Description | Main Techniques in the Module |
-| :----: | ----------- | ------------ |
+|  Module | Description | Main Implemented Techniques |
+| :------: | -------------------- | ------------ |
 | **configuration loader** | Load the SV computing parameters specified by the users| / |
 | **sampler** | Generate the coalitions or permutations of players based on the configured sampling strategy| Random Sampling, Stratified Sampling, Antithetic Sampling |
 | **utility calculator** | Compute the utility of the sampled coalitions or permutations. When users specify an efficiency optimization strategy, the utility calculator will use that strategy to accelerate the computation. | Truncation, ML Speedup for Efficiency Optimization |
@@ -18,7 +18,7 @@ Below, we show three typical DA tasks, namely **Result Interpretation(RI)**, **D
 The datasets, player set, and utility function used by each task are summarized in the following:
 
 |  Datasets  | Number of Training Samples | Number of Test Samples | Number of Features for Each Sample | Number of Classes |
-| :----: | ------------ | ------------ | ------------- | ------------ |
+| :----: | --------- | --------- | --------- | --------- |
 | **Iris** | 120  | 30 | 4 | 3|
 | **Wine** | 142 | 36| 13 |3|
 | **MNIST** | 60,000   | 10,000  | 1 x 28 x 28 |10|
