@@ -52,7 +52,7 @@ To use **_SvBench_**, users need to download all the codes to their project dire
 ```
 pip3 install -r requirements.txt
 ```
-<!--这句话放这里有点不合适的感觉，应该要先完成后面的任务设定，以及算法参数设定，才有对应任务的py文件，然后去import sv_calc函数来计算任务中的sv?-->
+这句话放这里有点不合适的感觉，应该要先完成后面的任务设定，以及算法参数设定，才有对应任务的py文件，然后去import sv_calc函数来计算任务中的sv?
 After this, to run the three benchmark tasks, you need to `from svbench import sv_calc` in your own python file and run the `sv_calc` function with relevant parameters.
 
 ## DA Task Preparation and Cooperative Game Modeling
