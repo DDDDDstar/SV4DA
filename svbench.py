@@ -13,18 +13,16 @@ def para_set(args):
     user_required = ['utility_function', 'full_check', 'player_num']
     paras = {'log_file': 'std',
              'utility_record_file': '',
-             'TC': False,
+             'optimization_strategy': None,
              'TC_threshold': 0.01,
-             'SV_cache_size': 5,
-             'algo': 'MC',
-             'sampling': 'random',
+             'conv_check_num': 5,
+             'base_algo': 'MC',
+             'sampling_strategy': 'random',
              'convergence_threshold': 0.1,
-             'parallel_threads_num': 1,
-             'GA': False,
-             'TSS': False,
+             'num_parallel_threads': 1,
              'manual_seed': 42,
-             'privacy': None,
-             'privacy_level': 0.5,
+             'privacy_protection_measure': None,
+             'privacy_protection_level': 0.5,
              'utility_function': None
              }
     for required_key in required:

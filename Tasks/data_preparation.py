@@ -7,7 +7,7 @@ import numpy as np
 from torchvision import datasets, transforms
 from sklearn.datasets import load_iris, load_wine
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, minmax_scale
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
 
 

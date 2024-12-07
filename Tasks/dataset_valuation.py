@@ -4,8 +4,8 @@ import random
 import os
 
 from .data_preparation import data_prepare
-from .Nets import RegressionModel, NN
-from .ML_utils import DNNTrain, DNNTest
+from .nets import RegressionModel, NN
+from .utils import DNNTrain, DNNTest
 
 
 class DSV():
@@ -30,15 +30,15 @@ class DSV():
 
         # player setting
         self.trn_data = torch.load(trn_path)
-        
+
         all_dataIdx = list(range(len(self.trn_data)))
         random.shuffle(all_dataIdx)
         self.players = [all_dataIdx[
             start_idx: min(len(self.trn_data),
-                            start_idx+self.tuple_to_set)]
+                           start_idx+self.tuple_to_set)]
                         for start_idx in range(0, len(self.trn_data),
-                                                self.tuple_to_set)]
-        
+                                               self.tuple_to_set)]
+
         self.Tst = torch.load('data/%s0/test.pt' % (dataset))
 
     def utility_computation(self, player_list):

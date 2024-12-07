@@ -3,8 +3,8 @@ import copy
 import os
 
 from .data_preparation import data_prepare
-from .Nets import RegressionModel, NN
-from .ML_utils import DNNTrain, DNNTest
+from .nets import RegressionModel, NN
+from .utils import DNNTrain, DNNTest
 
 
 class DV():

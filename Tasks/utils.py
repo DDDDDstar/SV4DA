@@ -1,12 +1,10 @@
-import time
 import torch
 import copy
 import numpy as np
 import torch.nn.functional as F
 
 from torch.utils.data import DataLoader
-from sklearn.metrics import f1_score, accuracy_score
-from .Nets import CNN, RegressionModel, LinearAttackModel, CNNCifar, NN
+from .nets import CNN, RegressionModel, LinearAttackModel, CNNCifar, NN
 
 TEST_BS = 128
 

@@ -1,6 +1,4 @@
 import numpy as np
-import sys
-import time
 import queue
 import os
 import copy
@@ -10,8 +8,9 @@ import torch
 from functools import reduce
 
 from .data_preparation import data_prepare
-from .Nets import NN, RegressionModel
-from .ML_utils import DNNTrain, DNNTest, find_free_device
+from .nets import NN, RegressionModel
+from .utils import DNNTrain, DNNTest, find_free_device
+
 
 class RI():
     def __init__(self, dataset, manual_seed, GA, TSS, parallel_threads_num):
@@ -105,31 +104,8 @@ class RI():
         self.randomSet = []
         self.testSampleFeatureSV = dict()
         self.testSampleFeatureSV_var = dict()
-        
+
         self.threads = []
-
-    def threads_clean(self):
-        for t in self.threads[:]:
-            if not t.is_alive():
-                self.threads.remove(t)
-        return len(self.threads)
-
-    def threads_controller(self, op, thread=None):
-        if op == 'add':
-            if thread == None:
-                raise Exception("Thread is None in thread addition op.")
-            # if there are enough threads, wait for the first thread to finish
-            # and remove it from the list
-            if self.threads_clean() >= self.parallel_threads_num:
-                self.threads[0].join()
-                self.threads.pop(0)
-            thread.daemon = True
-            thread.start()
-            self.threads.append(thread)
-        elif op == 'finish':
-            for thread in self.threads:
-                thread.join()
-            self.threads = []
 
     def train_model(self):
         model_path = 'models/attribution_RI-%s.pt' % (
@@ -167,7 +143,8 @@ class RI():
         dataset = Tst.dataset.reshape((ori_shape[0], -1))
         dataset[:, replace_idxs] = torch.FloatTensor(replace_val)
         Tst.dataset = dataset.reshape(ori_shape)
-        results.put(DNNTest(model=self.model, test_data=Tst, metric='prediction'))
+        results.put(DNNTest(model=self.model,
+                    test_data=Tst, metric='prediction'))
 
     def utility_computation(self, player_idxs):
         utility = 0.0
@@ -181,11 +158,7 @@ class RI():
         # model testing (maybe expedited by some ML speedup functions)
         results = queue.Queue()
         for order, replace_val in enumerate(baselines):
-            thread = threading.Thread(
-                target=self.torch_predict,
-                args=(replace_idxs, replace_val, results))
-            self.threads_controller('add', thread)
-        self.threads_controller('finish')
+            self.torch_predict(replace_idxs, replace_val, results)
         predictions = np.sum(list(results.queue), 0)/len(baselines)
         utility = predictions.sum()/reduce((lambda x, y: x*y), predictions.shape)
 

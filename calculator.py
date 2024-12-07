@@ -1,11 +1,9 @@
-import random
 import math
 import time
 import datetime
 import threading
 import queue
 import pulp
-import copy
 import warnings
 import numpy as np
 
@@ -15,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 
 class Shapley():
-    def __init__(self, player_num,
+    def __init__(self, task, player_num,
                  utility_function,
                  argorithm,
                  truncation,
@@ -23,6 +21,7 @@ class Shapley():
                  parallel_threads_num,
                  sampler,
                  output):
+        self.task = task
         self.player_num = player_num
         self.utility_function = utility_function
 
@@ -125,7 +124,7 @@ class Shapley():
         permutation = kwargs.get('permutation')
         utility_calculated_coalitions = kwargs.get('coalitions')
 
-        permutation, iter_times = self.sampler.sampling(
+        permutation, iter_times = self.sampler.sample(
             last=permutation)
 
         print('\n Monte Carlo iteration %s: ' % iter_times, permutation)
@@ -213,7 +212,7 @@ class Shapley():
             if full_sampling_flag:
                 break
             for m in range(MLE_M):
-                I_mq, full_sampling_flag = self.sampler.sampling(
+                I_mq, full_sampling_flag = self.sampler.sample(
                     q=iter_ / MLE_interval, I_mq=I_mq, m=m)
                 if full_sampling_flag:
                     break
@@ -278,7 +277,7 @@ class Shapley():
         selected_coalitions = []
         selected_players = []
         for _ in range(self.player_num):
-            selected_players, full_sampling_flag, iter_times = self.sampler.sampling(
+            selected_players, full_sampling_flag, iter_times = self.sampler.sample(
                 q_k, selected_players)
             selected_coalitions.append(selected_players)
             if full_sampling_flag:
@@ -371,7 +370,7 @@ class Shapley():
         N = self.player_num
         num_measurement = int(N/2)
 
-        permutation, iter_times = self.sampler.sampling(
+        permutation, iter_times = self.sampler.sample(
             last=permutation)
         print('\n Compressive permutation sampling iteration %s: ' %
               iter_times, permutation)
@@ -445,7 +444,7 @@ class Shapley():
         z = kwargs.get('z_RE')
         utilities = kwargs.get('utilities_RE')
 
-        permutation, iter_times = self.sampler.sampling(last=permutation)
+        permutation, iter_times = self.sampler.sample(last=permutation)
         z_i = []
         results = queue.Queue()
         for order, _ in enumerate(permutation):
@@ -504,7 +503,7 @@ class Shapley():
                   len(self.truncation_coaliations))
             print("Current times of utility computation: ",
                   len(utility_calculated_coalitions)-len(self.truncation_coaliations))
-            
+
             return iter_times
 
     def problemScale_statistics(self):
@@ -521,25 +520,27 @@ class Shapley():
     def SV_calculate(self):
         # print problem scale and the task's overall utility
         self.problemScale_statistics()
-
-        if self.argorithm == 'MC':
-            base_comp_func = self.MC
-        elif self.argorithm == 'MLE':
-            base_comp_func = self.MLE
-        elif self.argorithm == 'RE':
-            base_comp_func = self.RE
-            self.empty_set_utility, _ = self.utility_function([])
-            print('The RE task\'s emptySet utility: ', self.empty_set_utility)
-        elif self.argorithm == 'GT':
-            base_comp_func = self.GT
-        elif self.argorithm == 'CP':
-            base_comp_func = self.CP
-        else:
-            print("Unknown computation method!!")
+        if not callable(self.argorithm):
+            if self.argorithm == 'MC':
+                base_comp_func = self.MC
+            elif self.argorithm == 'MLE':
+                base_comp_func = self.MLE
+            elif self.argorithm == 'RE':
+                base_comp_func = self.RE
+                self.empty_set_utility, _ = self.utility_function([])
+                print('The RE task\'s emptySet utility: ',
+                      self.empty_set_utility)
+            elif self.argorithm == 'GT':
+                base_comp_func = self.GT
+            elif self.argorithm == 'CP':
+                base_comp_func = self.CP
 
         self.start_time = time.time()
         avg_time_cost = 0
         calculated_num = 0
+        resultant_SVs = []
+        resultant_SVs_var = []
+        utility_comp_num = 0
 
         N = self.player_num
         # MC & CP & RE paras
@@ -572,20 +573,27 @@ class Shapley():
         z_RE = np.array([0 for _ in range(N)]).reshape(1, -1)
         utilities_RE = {0: self.empty_set_utility}
         while not self.output.convergence_check(calculated_num=calculated_num,
-                                                resultant_SVs=self.SV,
-                                                SVs_var=self.SV_var,
+                                                SVs=resultant_SVs,
+                                                SVs_var=resultant_SVs_var,
                                                 start_time=self.start_time,
-                                                utility_comp_num=self.utility_comp_num,
-                                                avg_time_cost=avg_time_cost):
+                                                utility_comp_num=utility_comp_num):
             if self.argorithm == 'MLE':
                 MLE_interval += int(self.player_num/MLE_M)
                 if self.sampler.sampling_strategy == 'antithetic':
                     MLE_M *= 2
-            calculated_num = base_comp_func(
-                permutation=permutation, coalitions=coalitions,
-                A_CP=A_CP, y_CP=y_CP,
-                MLE_interval=MLE_interval, MLE_M=MLE_M,
-                Z=Z, q_k=q_k, utilities_GT=utilities_GT,
-                A_RE=A_RE, z_RE=z_RE, utilities_RE=utilities_RE)
-            avg_time_cost = np.average(self.time_cost_per_utility_comp) if len(
-                self.time_cost_per_utility_comp) > 0 else 0
+            if not callable(self.argorithm):
+                calculated_num = base_comp_func(
+                    permutation=permutation, coalitions=coalitions,
+                    A_CP=A_CP, y_CP=y_CP,
+                    MLE_interval=MLE_interval, MLE_M=MLE_M,
+                    Z=Z, q_k=q_k, utilities_GT=utilities_GT,
+                    A_RE=A_RE, z_RE=z_RE, utilities_RE=utilities_RE)
+                resultant_SVs = self.SV
+                resultant_SVs_var = self.SV_var
+                utility_comp_num = self.utility_comp_num
+                avg_time_cost = np.average(self.time_cost_per_utility_comp) if len(
+                    self.time_cost_per_utility_comp) > 0 else 0
+            else:
+                resultant_SVs, resultant_SVs_var = self.argorithm(
+                    self.sampler.sample())
+                calculated_num += 1

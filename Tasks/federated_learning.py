@@ -4,8 +4,8 @@ import os
 import time
 import sys
 
-from .ML_utils import DNNTrain, DNNTest, find_free_device
-from .Nets import CNNCifar, CNN
+from .utils import DNNTrain, DNNTest, find_free_device
+from .nets import CNNCifar, CNN
 from .data_preparation import data_prepare
 
 
@@ -73,8 +73,6 @@ class FL():
                         ridx, player_idx)
                     )
                     torch.cuda.empty_cache()
-                    # print('Round %s player %s time cost:' % (ridx, player_idx),
-                    #       time.time()-pstar_time)
                     sys.stdout.flush()
                 # aggregation
                 agg_results = self.weighted_avg(localUpdates, p_k)

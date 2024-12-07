@@ -2,7 +2,6 @@ import threading
 import sys
 import os
 import numpy as np
-import json
 import portalocker
 import time
 
@@ -48,9 +47,9 @@ BENCHMARK = {
 class Task():
     def __init__(self, args):
         self.args = args
-        self.GA = args.GA
-        self.TSS = args.TSS
-        self.parallel_threads_num = 1 if self.GA else args.parallel_threads_num
+        self.GA = 'GA' in args.optimization_strategy
+        self.TSS = 'TSS' in args.optimization_strategy
+        self.parallel_threads_num = 1 if self.GA else args.num_parallel_threads
 
         self.init_flag = True
 
@@ -73,30 +72,31 @@ class Task():
         self.utility_record_write_flag = False
         self.dirty_utility_record_num = 0
 
-        if args.task in BENCHMARK:
-            self.player_num = BENCHMARK[args.task][self.dataset]
-            full_check_type = BENCHMARK_ALGO[args.algo][0]
+        if self.task in BENCHMARK:
+            self.player_num = BENCHMARK[self.task][self.dataset]
+            full_check_type = BENCHMARK_ALGO[args.base_algo][0]
         else:
             self.player_num = args.player_num
             full_check_type = args.full_check
 
         self.shapley = Shapley(
+            task=self.task,
             player_num=self.player_num,
             utility_function=self.utility_computation_call,
-            argorithm=args.algo,
-            truncation=args.TC,
+            argorithm=args.base_algo,
+            truncation='TC' in args.optimization_strategy,
             truncation_threshold=args.TC_threshold,
             parallel_threads_num=self.parallel_threads_num,
             sampler=Sampler(
-                sampling_strategy=args.sampling,
-                algo=args.algo, player_num=self.player_num),
+                sampling=args.sampling_strategy,
+                algo=args.base_algo, player_num=self.player_num),
             output=Output(
                 convergence_threshold=args.convergence_threshold,
-                cache_size=args.SV_cache_size,
+                cache_size=args.conv_check_num,
                 player_num=self.player_num,
                 full_check_type=full_check_type,
-                privacy_protection_measure=args.privacy,
-                privacy_protection_level=args.privacy_level))
+                privacy_protection_measure=args.privacy_protection_measure,
+                privacy_protection_level=args.privacy_protection_level))
 
         self.flush_event = threading.Event()
 
