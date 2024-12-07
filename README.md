@@ -16,10 +16,10 @@ As shown in the figure, ***SvBench***  is composed of a config loader, a sampler
 
 |  Config | Parameters  (Default setting is in bold.) |
 | :------: | -------------------- |
-| **Base Algo** | `**MC**` `RE` `MLE` `GT` `CP`, `user-specific` |
-| **Sampling** | `**random**` `antithetic` `stratified`, `user-specific` |
-| **Optimization** | `None`, `TC, `GA, `TC+GA`, `GA+TSS`, `TC+GA+TSS`, `user-specific` |
-| **Privacy** | `None`, `DP`, `QT`, `DR`, `user-specific` |
+| **Base Algo** | **`MC`**, `RE`, `MLE`, `GT`, `CP`, `user-specific` |
+| **Sampling** | `None`,**`random`**, `antithetic`, `stratified`, `user-specific` |
+| **Optimization** | **`None`**, `TC`, `GA`, `TC+GA`, `GA+TSS`, `TC+GA+TSS`, `user-specific` |
+| **Privacy** | **`None`**, `DP`, `QT`, `DR`, `user-specific` |
 
 Below, we show three typical DA tasks, namely **Result Interpretation(RI)**, **Data Valuation(DV)**, and **Federated Learning(FL)**, as example use cases and present how to use ***SvBench***  to implement different SV computing algorithms in these tasks.
 The datasets, player set, and utility function used by each task are summarized in the following:
