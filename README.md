@@ -167,9 +167,10 @@ Our survey paper uses **_SvBench_** to conduct the following four sets of experi
 
 (4) We explore the relationship between SV of the four types of players in DA and the overall utility of their associated tasks, offering insights to the question **Can the SV of the four types of players in DA correctly be interpreted by the mainstream paradigm?**
 
-The instructions for conducting the **first** set of experiments are summarized as follows.
 
-(1) experiments on **RI_Iris**
+### Instructions for the **first** set of experiments
+
+(1) experiments on **RI_Iris** task
 ```
 # five base algorithms
 python exp.py --task=RI --dataset=iris --algo=MC
@@ -186,7 +187,7 @@ python exp.py --task=RI --dataset=iris --algo=GT --optimization=TC
 python exp.py --task=RI --dataset=iris --algo=CP --optimization=TC
 ```
 
-(2) experiments on **RI_Wine**
+(2) experiments on **RI_Wine** task
 ```
 # five base algorithms
 python exp.py --task=RI --dataset=wine --algo=MC
@@ -203,7 +204,7 @@ python exp.py --task=RI --dataset=wine --algo=GT --optimization=TC
 python exp.py --task=RI --dataset=wine --algo=CP --optimization=TC
 ```
 
-(3) experiments on **DV_Iris**
+(3) experiments on **DV_Iris** task
 ```
 # five base algorithms
 python exp.py --task=DV --dataset=iris --algo=MC
@@ -228,7 +229,7 @@ python exp.py --task=DV --dataset=iris --algo=RE --optimization=TC+GA
 python exp.py --task=DV --dataset=iris --algo=CP --optimization=TC+GA
 ```
 
-(4) experiments on **DV_Wine**
+(4) experiments on **DV_Wine** task
 ```
 # five base algorithms
 python exp.py --task=DV --dataset=wine --algo=MC
@@ -252,7 +253,7 @@ python exp.py --task=DV --dataset=wine --algo=MC --optimization=TC+GA
 python exp.py --task=DV --dataset=wine --algo=RE --optimization=TC+GA
 python exp.py --task=DV --dataset=wine --algo=CP --optimization=TC+GA
 ```
-(5) experiments on **FL_Mnist**
+(5) experiments on **FL_Mnist** task
 ```
 # five base algorithms
 python exp.py --task=FL --dataset=mnist --algo=MC
@@ -293,7 +294,7 @@ python exp.py --task=FL --dataset=mnist --algo=GT --optimization=TC+GA+TSS
 python exp.py --task=FL --dataset=mnist --algo=CP --optimization=TC+GA+TSS
 ```
 
-(6) experiments on **FL_Cifar**
+(6) experiments on **FL_Cifar** task
 ```
 # five base algorithms
 python exp.py --task=FL --dataset=cifar --algo=MC
@@ -334,52 +335,51 @@ python exp.py --task=FL --dataset=cifar --algo=GT --optimization=TC+GA+TSS
 python exp.py --task=FL --dataset=cifar --algo=CP --optimization=TC+GA+TSS
 ```
 
-
-The instructions for conducting the **second** set of experiments are summarized as follows.
-(1) experiments on **RI_Iris**
+### Instructions for the **second** set of experiments
+(1) experiments on **RI_Iris** task
 ```
 python exp.py --task=RI --dataset=iris --algo=MC --sampling=random
 python exp.py --task=RI --dataset=iris --algo=MC --sampling=stratified
 python exp.py --task=RI --dataset=iris --algo=MC --sampling=antithetic
 ```
 
-(2) experiments on **RI_Wine**
+(2) experiments on **RI_Wine** task
 ```
 python exp.py --task=RI --dataset=wine --algo=MC --sampling=random
 python exp.py --task=RI --dataset=wine --algo=MC --sampling=stratified
 python exp.py --task=RI --dataset=wine --algo=MC --sampling=antithetic
 ```
 
-(3) experiments on **DV_Iris**
+(3) experiments on **DV_Iris** task
 ```
 python exp.py --task=DV --dataset=iris --algo=MC --sampling=random
 python exp.py --task=DV --dataset=iris --algo=MC --sampling=stratified
 python exp.py --task=DV --dataset=iris --algo=MC --sampling=antithetic
 ```
 
-(4) experiments on **DV_Wine**
+(4) experiments on **DV_Wine** task
 ```
 python exp.py --task=DV --dataset=wine --algo=MC --sampling=random
 python exp.py --task=DV --dataset=wine --algo=MC --sampling=stratified
 python exp.py --task=DV --dataset=wine --algo=MC --sampling=antithetic
 ```
 
-(5) experiments on **FL_Mnist**
+(5) experiments on **FL_Mnist** task
 ```
 python exp.py --task=FL --dataset=mnist --algo=MC --sampling=random
 python exp.py --task=FL --dataset=mnist --algo=MC --sampling=stratified
 python exp.py --task=FL --dataset=mnist --algo=MC --sampling=antithetic
 ```
 
-(5) experiments on **FL_Cifar**
+(5) experiments on **FL_Cifar** task
 ```
 python exp.py --task=FL --dataset=cifar --algo=MC --sampling=random
 python exp.py --task=FL --dataset=cifar --algo=MC --sampling=stratified
 python exp.py --task=FL --dataset=cifar --algo=MC --sampling=antithetic
 ```
 
-The instructions for conducting the **third** set of experiments are summarized as follows.
-(1) experiments on **RI_Iris**
+### Instructions for the **third** set of experiments
+(1) experiments on **RI_Iris** task
 ```
 # differential privacy （protection strength from low to high）
 python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
@@ -398,7 +398,7 @@ python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR
 python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
-(2) experiments on **RI_Wine**
+(2) experiments on **RI_Wine** task
 ```
 # differential privacy （protection strength from low to high）
 python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
@@ -417,7 +417,7 @@ python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR
 python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
-(3) experiments on **DV_Iris**
+(3) experiments on **DV_Iris** task
 ```
 # differential privacy （protection strength from low to high）
 python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
@@ -436,7 +436,7 @@ python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR
 python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
-(4) experiments on **DV_Wine**
+(4) experiments on **DV_Wine** task
 ```
 # differential privacy （protection strength from low to high）
 python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
@@ -455,7 +455,7 @@ python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR
 python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
-The instructions for conducting the **fourth** set of experiments are summarized as follows.
+### Instructions for the **final** set of experiments
 ```
 python exp.py --task=RI --dataset=iris --algo=MC
 python exp.py --task=RI --dataset=wine --algo=MC
