@@ -1,4 +1,5 @@
 import random
+import math
 import numpy as np
 
 
@@ -8,31 +9,44 @@ class Sampler():
         self.algo = algo
         self.player_num = player_num
         self.sampling_times = 0
-        self.permutations = set()
+        self.permutations = []
         self.coalitions = set()
 
-    def generateRandomPermutation(self, permutation):
+    def generateRandomPermutation(self):
+        if len(self.permutations) >= math.factorial(self.player_num):
+            return None
+        permutation = list(range(self.player_num))
         while ",".join(map(str, permutation)) in self.permutations:
             random.shuffle(permutation)
         return permutation
 
-    def MC_sample(self, last):
-        if last is None:
-            raise Exception("Parameter(last) is required.")
+    def generateRandomSubset(self, q_k):
+        k = np.random.choice(range(1, self.player_num), p=q_k, size=1)
+        selected_players = np.random.choice(
+            range(self.player_num), int(k), replace=False)
+        while ",".join(map(str, sorted(selected_players))) in self.coalitions:
+            k = np.random.choice(range(0, self.player_num+1), size=1)
+            selected_players = np.random.choice(
+                range(self.player_num), int(k), replace=False)
+        return selected_players
+
+    def MC_sample(self):
         if self.sampling == 'random':
-            permutation = self.generateRandomPermutation(last)
+            permutation = self.generateRandomPermutation()
         elif self.sampling == 'antithetic':
-            permutation = self.generateRandomPermutation(last) if self.sampling_times % 2 == 1  \
-                else list(reversed(last))
+            permutation = self.generateRandomPermutation() if self.sampling_times % 2 == 1  \
+                else list(reversed(self.permutations[-1]))
         elif self.sampling == 'stratified':
-            permutation = self.generateRandomPermutation(last) if self.sampling_times % len(last) == 1  \
-                else last[-1:] + last[:-1]
+            permutation = self.generateRandomPermutation() if self.sampling_times % len(last) == 1  \
+                else self.permutations[-1][-1:] + self.permutations[-1][:-1]
+        if permutation is None:
+            return None, True
         self.permutations.add(",".join(map(str, permutation)))
-        return permutation
+        return permutation, False
 
     def MLE_sample(self, q, I_mq, m):
         if len(self.coalitions) >= 2**self.player_num:
-            return [], True
+            return None, True
         # generate Bernoulli random numbers independently
         if q is None or I_mq is None or m is None:
             raise Exception("Parameters(q, I_mq, and m) are required.")
@@ -46,17 +60,9 @@ class Sampler():
         self.coalitions.add(",".join(map(str, I_mq)))
         return I_mq, False
 
-    def generateRandomSubset(self, q_k):
-        k = np.random.choice(range(1, self.player_num), p=q_k, size=1)
-        selected_players = np.random.choice(
-            range(self.player_num), int(k), replace=False)
-        while ",".join(map(str, sorted(selected_players))) in self.coalitions:
-            k = np.random.choice(range(0, self.player_num+1), size=1)
-            selected_players = np.random.choice(
-                range(self.player_num), int(k), replace=False)
-        return selected_players
-
     def GT_sample(self, q_k, last):
+        if len(self.coalitions) >= 2**self.player_num:
+            return None, True
         if self.sampling == 'antithetic':
             selected_players = self.generateRandomSubset(q_k)   \
                 if self.sampling_times % 2 == 1 \
@@ -66,16 +72,16 @@ class Sampler():
         else:
             selected_players = self.generateRandomSubset(q_k)
         self.coalitions.add(",".join(map(str, sorted(selected_players))))
-        return selected_players, len(self.coalitions) >= 2**self.player_num
+        return selected_players, False
 
     def sample(self, **kwargs):
         self.sampling_times += 1
         if not callable(self.sampling):
             if self.algo in ['MC', 'CP', 'RE']:
-                return self.MC_sampling(kwargs.get('last')), self.sampling_times
+                return self.MC_sample(), self.sampling_times
             elif self.algo == 'MLE':
-                return self.MLE_sampling(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m'))
+                return self.MLE_sample(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m'))
             elif self.algo == 'GT':
-                return self.GT_sampling(kwargs.get('q_k'), kwargs.get('last')), self.sampling_times
+                return self.GT_sample(kwargs.get('q_k'), kwargs.get('last')), self.sampling_times
         else:
             return self.sampling()
