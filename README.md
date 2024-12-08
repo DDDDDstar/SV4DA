@@ -16,12 +16,12 @@ As shown in the figure, **_SvBench_** is composed of a config loader, a sampler,
 | **convergence checker**  | Determine whether to terminate the SV computation based on the convergence criterion specified in the configuration                                                                                 | SV Ranking                                                                                                |
 |  **output aggregator**   | Generate the final SV of each player. If users specify privacy protection measures, the aggregator will execute those measures before reporting the final results.                                  | Measures (e.g., Differential Privacy, Quantization and Dimension Reduction) for Privacy Protection on SV. |
 
-|      Config      | Options (Default setting is in bold.)                                   |
-| :--------------: | ----------------------------------------------------------------------- |
-|     **Algo**     | **`MC`**, `RE`, `MLE`, `GT`, `CP`, `user-specific`                      |
-|   **Sampling**   | `None`,**`random`**, `antithetic`, `stratified`, `user-specific`        |
+|      Config      | Options (Default setting is in bold.)                        |
+| :--------------: | ------------------------------------------------------------ |
+|     **Algo**     | **`MC`**, `RE`, `MLE`, `GT`, `CP`, `user-specific`           |
+|   **Sampling**   | `None`,**`random`**, `antithetic`, `stratified`, `user-specific` |
 | **Optimization** | **`None`**, `TC`, `GA`, `TC+GA`, `GA+TSS`, `TC+GA+TSS`, `user-specific` |
-|   **Privacy**    | **`None`**, `DP`, `QT`, `DR`, `user-specific`                           |
+|   **Privacy**    | **`None`**, `DP`, `QT`, `DR`, `user-specific`                |
 
 [![LICENSE](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://github.com/apecloud/foxlake/blob/main/LICENSE) [![GitHub CodeQL Advanced](https://github.com/DDDDDstar/SV4DA/actions/workflows/codeql.yml/badge.svg)](https://github.com/DDDDDstar/SV4DA/actions/workflows/codeql.yml) [![Contributors](https://img.shields.io/github/contributors/DDDDDstar/SV4DA?color=3ba272)](https://github.com/DDDDDstar/SV4DA/graphs/contributors) [![Language](https://img.shields.io/badge/Language-Python-blue.svg)](https://www.python.org/)
 
@@ -113,36 +113,36 @@ Here, we provide some examples of invoking `sv_calc`.
 (1) run a base SV computing algorithm, **MC**, in six example DA tasks.
 
 ```python
-sv_calc(task='RI', dataset='iris', algo='MC')
-sv_calc(task='RI', dataset='wine', algo='MC')
-sv_calc(task='DV', dataset='iris', algo='MC')
-sv_calc(task='DV', dataset='wine', algo='MC')
-sv_calc(task='FL', dataset='minst', algo='MC')
-sv_calc(task='FL', dataset='cifar', algo='MC')
+sv_calc(task='RI', dataset='iris', base_algo='MC')
+sv_calc(task='RI', dataset='wine', base_algo='MC')
+sv_calc(task='DV', dataset='iris', base_algo='MC')
+sv_calc(task='DV', dataset='wine', base_algo='MC')
+sv_calc(task='FL', dataset='minst', base_algo='MC')
+sv_calc(task='FL', dataset='cifar', base_algo='MC')
 ```
 
 (2) run a hybrid SV computing algorithm, integrating **MC** with **stratified** sampling strategy and **truncation** technique for efficient optimization, in **DV_Iris** task.
 
 ```python
-sv_calc(task='DV', dataset='iris', algo='MC', sampling_strategy='stratified', optimization_strategy='TC')
+sv_calc(task='DV', dataset='iris', base_algo='MC', sampling_strategy='stratified', optimization_strategy='TC')
 ```
 
 (2) run a hybrid SV computing algorithm, integrating **MC** with **antithetic** sampling strategy and **truncation** and **gradient-approximation** techniques for efficient optimization, in **DV_Iris** task.
 
 ```python
-sv_calc(task='DV', dataset='iris', algo='MC', sampling_strategy='antithetic', optimization_strategy='TC+GA')
+sv_calc(task='DV', dataset='iris', base_algo='MC', sampling_strategy='antithetic', optimization_strategy='TC+GA')
 ```
 
 (3) run a hybrid SV computing algorithm, integrating **MC** with **truncation**, **gradient-approximation** and **test-sample-skip** techniques for efficient optimization, in **FL-Cifar** task.
 
 ```python
-sv_calc(task='FL', dataset='cifar', algo='MC', optimization_strategy='TC+GA+TSS')
+sv_calc(task='FL', dataset='cifar', base_algo='MC', optimization_strategy='TC+GA+TSS')
 ```
 
 (4) run a hybrid SV computing algorithm, integrating **MC** with **DP** for privacy protection on SV, in **DV_Iris** task.
 
 ```python
-sv_calc(task='DV', dataset='iris', algo='MC', privacy_protection_measure='DP', privacy_protection_level=0.5)
+sv_calc(task='DV', dataset='iris', base_algo='MC', privacy_protection_measure='DP', privacy_protection_level=0.5)
 ```
 
 ## Extend **_SvBench_**
@@ -178,344 +178,344 @@ Our survey paper has utilized **_SvBench_** to conduct the following four sets o
 (1) experiments on **RI_Iris** task
 ```
 # five base algorithms
-python exp.py --task=RI --dataset=iris --algo=MC
-python exp.py --task=RI --dataset=iris --algo=MLE
-python exp.py --task=RI --dataset=iris --algo=RE
-python exp.py --task=RI --dataset=iris --algo=GT
-python exp.py --task=RI --dataset=iris --algo=CP
+python exp.py --task=RI --dataset=iris --base_algo=MC
+python exp.py --task=RI --dataset=iris --base_algo=MLE
+python exp.py --task=RI --dataset=iris --base_algo=RE
+python exp.py --task=RI --dataset=iris --base_algo=GT
+python exp.py --task=RI --dataset=iris --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=RI --dataset=iris --algo=MC --optimization=TC
-python exp.py --task=RI --dataset=iris --algo=MLE --optimization=TC
-python exp.py --task=RI --dataset=iris --algo=RE --optimization=TC
-python exp.py --task=RI --dataset=iris --algo=GT --optimization=TC
-python exp.py --task=RI --dataset=iris --algo=CP --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=MC --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=MLE --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=RE --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=GT --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=CP --optimization=TC
 ```
 
 (2) experiments on **RI_Wine** task
 ```
 # five base algorithms
-python exp.py --task=RI --dataset=wine --algo=MC
-python exp.py --task=RI --dataset=wine --algo=MLE
-python exp.py --task=RI --dataset=wine --algo=RE
-python exp.py --task=RI --dataset=wine --algo=GT
-python exp.py --task=RI --dataset=wine --algo=CP
+python exp.py --task=RI --dataset=wine --base_algo=MC
+python exp.py --task=RI --dataset=wine --base_algo=MLE
+python exp.py --task=RI --dataset=wine --base_algo=RE
+python exp.py --task=RI --dataset=wine --base_algo=GT
+python exp.py --task=RI --dataset=wine --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=RI --dataset=wine --algo=MC --optimization=TC
-python exp.py --task=RI --dataset=wine --algo=MLE --optimization=TC
-python exp.py --task=RI --dataset=wine --algo=RE --optimization=TC
-python exp.py --task=RI --dataset=wine --algo=GT --optimization=TC
-python exp.py --task=RI --dataset=wine --algo=CP --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=MC --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=MLE --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=RE --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=GT --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=CP --optimization=TC
 ```
 
 (3) experiments on **DV_Iris** task
 ```
 # five base algorithms
-python exp.py --task=DV --dataset=iris --algo=MC
-python exp.py --task=DV --dataset=iris --algo=MLE
-python exp.py --task=DV --dataset=iris --algo=RE
-python exp.py --task=DV --dataset=iris --algo=GT
-python exp.py --task=DV --dataset=iris --algo=CP
+python exp.py --task=DV --dataset=iris --base_algo=MC
+python exp.py --task=DV --dataset=iris --base_algo=MLE
+python exp.py --task=DV --dataset=iris --base_algo=RE
+python exp.py --task=DV --dataset=iris --base_algo=GT
+python exp.py --task=DV --dataset=iris --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=DV --dataset=iris --algo=MC --optimization=TC
-python exp.py --task=DV --dataset=iris --algo=MLE --optimization=TC
-python exp.py --task=DV --dataset=iris --algo=RE --optimization=TC
-python exp.py --task=DV --dataset=iris --algo=GT --optimization=TC
-python exp.py --task=DV --dataset=iris --algo=CP --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=MLE --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=GT --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=TC
 
-python exp.py --task=DV --dataset=iris --algo=MC --optimization=GA
-python exp.py --task=DV --dataset=iris --algo=RE --optimization=GA
-python exp.py --task=DV --dataset=iris --algo=CP --optimization=GA
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=GA
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=GA
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=GA
 
-python exp.py --task=DV --dataset=iris --algo=MC --optimization=TC+GA
-python exp.py --task=DV --dataset=iris --algo=RE --optimization=TC+GA
-python exp.py --task=DV --dataset=iris --algo=CP --optimization=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=TC+GA
 ```
 
 (4) experiments on **DV_Wine** task
 ```
 # five base algorithms
-python exp.py --task=DV --dataset=wine --algo=MC
-python exp.py --task=DV --dataset=wine --algo=MLE
-python exp.py --task=DV --dataset=wine --algo=RE
-python exp.py --task=DV --dataset=wine --algo=GT
-python exp.py --task=DV --dataset=wine --algo=CP
+python exp.py --task=DV --dataset=wine --base_algo=MC
+python exp.py --task=DV --dataset=wine --base_algo=MLE
+python exp.py --task=DV --dataset=wine --base_algo=RE
+python exp.py --task=DV --dataset=wine --base_algo=GT
+python exp.py --task=DV --dataset=wine --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=DV --dataset=wine --algo=MC --optimization=TC
-python exp.py --task=DV --dataset=wine --algo=MLE --optimization=TC
-python exp.py --task=DV --dataset=wine --algo=RE --optimization=TC
-python exp.py --task=DV --dataset=wine --algo=GT --optimization=TC
-python exp.py --task=DV --dataset=wine --algo=CP --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=MLE --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=GT --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=TC
 
-python exp.py --task=DV --dataset=wine --algo=MC --optimization=GA
-python exp.py --task=DV --dataset=wine --algo=RE --optimization=GA
-python exp.py --task=DV --dataset=wine --algo=CP --optimization=GA
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=GA
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=GA
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=GA
 
-python exp.py --task=DV --dataset=wine --algo=MC --optimization=TC+GA
-python exp.py --task=DV --dataset=wine --algo=RE --optimization=TC+GA
-python exp.py --task=DV --dataset=wine --algo=CP --optimization=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=TC+GA
 ```
 (5) experiments on **FL_Mnist** task
 ```
 # five base algorithms
-python exp.py --task=FL --dataset=mnist --algo=MC
-python exp.py --task=FL --dataset=mnist --algo=MLE
-python exp.py --task=FL --dataset=mnist --algo=RE
-python exp.py --task=FL --dataset=mnist --algo=GT
-python exp.py --task=FL --dataset=mnist --algo=CP
+python exp.py --task=FL --dataset=mnist --base_algo=MC
+python exp.py --task=FL --dataset=mnist --base_algo=MLE
+python exp.py --task=FL --dataset=mnist --base_algo=RE
+python exp.py --task=FL --dataset=mnist --base_algo=GT
+python exp.py --task=FL --dataset=mnist --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=FL --dataset=mnist --algo=MC --optimization=TC
-python exp.py --task=FL --dataset=mnist --algo=MLE --optimization=TC
-python exp.py --task=FL --dataset=mnist --algo=RE --optimization=TC
-python exp.py --task=FL --dataset=mnist --algo=GT --optimization=TC
-python exp.py --task=FL --dataset=mnist --algo=CP --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC
 
-python exp.py --task=FL --dataset=mnist --algo=MC --optimization=GA
-python exp.py --task=FL --dataset=mnist --algo=MLE --optimization=GA
-python exp.py --task=FL --dataset=mnist --algo=RE --optimization=GA 
-python exp.py --task=FL --dataset=mnist --algo=GT --optimization=GA
-python exp.py --task=FL --dataset=mnist --algo=CP --optimization=GA
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=GA
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=GA
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=GA 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=GA
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=GA
 
-python exp.py --task=FL --dataset=mnist --algo=MC --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=MLE --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=RE --optimization=GA+TSS 
-python exp.py --task=FL --dataset=mnist --algo=GT --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=CP --optimization=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=GA+TSS 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=GA+TSS
 
-python exp.py --task=FL --dataset=mnist --algo=MC --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --algo=MLE --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --algo=RE --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --algo=GT --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --algo=CP --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC+GA
 
-python exp.py --task=FL --dataset=mnist --algo=MC --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=MLE --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=RE --optimization=TC+GA+TSS 
-python exp.py --task=FL --dataset=mnist --algo=GT --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --algo=CP --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC+GA+TSS 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC+GA+TSS
 ```
 
 (6) experiments on **FL_Cifar** task
 ```
 # five base algorithms
-python exp.py --task=FL --dataset=cifar --algo=MC
-python exp.py --task=FL --dataset=cifar --algo=MLE
-python exp.py --task=FL --dataset=cifar --algo=RE
-python exp.py --task=FL --dataset=cifar --algo=GT
-python exp.py --task=FL --dataset=cifar --algo=CP
+python exp.py --task=FL --dataset=cifar --base_algo=MC
+python exp.py --task=FL --dataset=cifar --base_algo=MLE
+python exp.py --task=FL --dataset=cifar --base_algo=RE
+python exp.py --task=FL --dataset=cifar --base_algo=GT
+python exp.py --task=FL --dataset=cifar --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=FL --dataset=cifar --algo=MC --optimization=TC
-python exp.py --task=FL --dataset=cifar --algo=MLE --optimization=TC
-python exp.py --task=FL --dataset=cifar --algo=RE --optimization=TC
-python exp.py --task=FL --dataset=cifar --algo=GT --optimization=TC
-python exp.py --task=FL --dataset=cifar --algo=CP --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC
 
-python exp.py --task=FL --dataset=cifar --algo=MC --optimization=GA
-python exp.py --task=FL --dataset=cifar --algo=MLE --optimization=GA
-python exp.py --task=FL --dataset=cifar --algo=RE --optimization=GA 
-python exp.py --task=FL --dataset=cifar --algo=GT --optimization=GA
-python exp.py --task=FL --dataset=cifar --algo=CP --optimization=GA
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=GA
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=GA
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=GA 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=GA
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=GA
 
-python exp.py --task=FL --dataset=cifar --algo=MC --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=MLE --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=RE --optimization=GA+TSS 
-python exp.py --task=FL --dataset=cifar --algo=GT --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=CP --optimization=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=GA+TSS 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=GA+TSS
 
-python exp.py --task=FL --dataset=cifar --algo=MC --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --algo=MLE --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --algo=RE --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --algo=GT --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --algo=CP --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC+GA
 
-python exp.py --task=FL --dataset=cifar --algo=MC --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=MLE --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=RE --optimization=TC+GA+TSS 
-python exp.py --task=FL --dataset=cifar --algo=GT --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --algo=CP --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC+GA+TSS 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC+GA+TSS
 ```
 
 ### Instructions for the **second** set of experiments
 (1) experiments on **RI_Iris** task
 ```
-python exp.py --task=RI --dataset=iris --algo=MC --sampling=random
-python exp.py --task=RI --dataset=iris --algo=MC --sampling=stratified
-python exp.py --task=RI --dataset=iris --algo=MC --sampling=antithetic
+python exp.py --task=RI --dataset=iris --base_algo=MC --sampling=random
+python exp.py --task=RI --dataset=iris --base_algo=MC --sampling=stratified
+python exp.py --task=RI --dataset=iris --base_algo=MC --sampling=antithetic
 ```
 
 (2) experiments on **RI_Wine** task
 ```
-python exp.py --task=RI --dataset=wine --algo=MC --sampling=random
-python exp.py --task=RI --dataset=wine --algo=MC --sampling=stratified
-python exp.py --task=RI --dataset=wine --algo=MC --sampling=antithetic
+python exp.py --task=RI --dataset=wine --base_algo=MC --sampling=random
+python exp.py --task=RI --dataset=wine --base_algo=MC --sampling=stratified
+python exp.py --task=RI --dataset=wine --base_algo=MC --sampling=antithetic
 ```
 
 (3) experiments on **DV_Iris** task
 ```
-python exp.py --task=DV --dataset=iris --algo=MC --sampling=random
-python exp.py --task=DV --dataset=iris --algo=MC --sampling=stratified
-python exp.py --task=DV --dataset=iris --algo=MC --sampling=antithetic
+python exp.py --task=DV --dataset=iris --base_algo=MC --sampling=random
+python exp.py --task=DV --dataset=iris --base_algo=MC --sampling=stratified
+python exp.py --task=DV --dataset=iris --base_algo=MC --sampling=antithetic
 ```
 
 (4) experiments on **DV_Wine** task
 ```
-python exp.py --task=DV --dataset=wine --algo=MC --sampling=random
-python exp.py --task=DV --dataset=wine --algo=MC --sampling=stratified
-python exp.py --task=DV --dataset=wine --algo=MC --sampling=antithetic
+python exp.py --task=DV --dataset=wine --base_algo=MC --sampling=random
+python exp.py --task=DV --dataset=wine --base_algo=MC --sampling=stratified
+python exp.py --task=DV --dataset=wine --base_algo=MC --sampling=antithetic
 ```
 
 (5) experiments on **FL_Mnist** task
 ```
-python exp.py --task=FL --dataset=mnist --algo=MC --sampling=random
-python exp.py --task=FL --dataset=mnist --algo=MC --sampling=stratified
-python exp.py --task=FL --dataset=mnist --algo=MC --sampling=antithetic
+python exp.py --task=FL --dataset=mnist --base_algo=MC --sampling=random
+python exp.py --task=FL --dataset=mnist --base_algo=MC --sampling=stratified
+python exp.py --task=FL --dataset=mnist --base_algo=MC --sampling=antithetic
 ```
 
 (5) experiments on **FL_Cifar** task
 ```
-python exp.py --task=FL --dataset=cifar --algo=MC --sampling=random
-python exp.py --task=FL --dataset=cifar --algo=MC --sampling=stratified
-python exp.py --task=FL --dataset=cifar --algo=MC --sampling=antithetic
+python exp.py --task=FL --dataset=cifar --base_algo=MC --sampling=random
+python exp.py --task=FL --dataset=cifar --base_algo=MC --sampling=stratified
+python exp.py --task=FL --dataset=cifar --base_algo=MC --sampling=antithetic
 ```
 
 ### Instructions for the **third** set of experiments
 (1) experiments on **RI_Iris** task
 ```
 # FIA-U: SV-driven feature attribution attack based on a uniform random distribution
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC
 
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 
 # FIA-G: SV-driven feature attribution attack based on a uniform random distribution
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC
 
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (2) experiments on **RI_Wine** task
 ```
 # FIA-U: SV-driven feature attribution attack based on a uniform random distribution
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC
 
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 
 # FIA-G: SV-driven feature attribution attack based on a uniform random distribution
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC
 
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (3) experiments on **DV_Iris** task
 ```
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (4) experiments on **DV_Wine** task
 ```
 # differential privacy （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --base_algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 ### Instructions for the **final** set of experiments
 Here, we create two new DV tasks on Iris and Wine, denoted as DSV_Iris and DSV_Wine, respectively. In the two tasks, the players are datasets, each containing 10% of tuples in the original dataset. We achieve the transformation from data tuple valuation to data set valuation by properly setting the parameter `--tuple_to_set`.
 
 ```
-python exp.py --task=RI --dataset=iris --algo=MC
-python exp.py --task=RI --dataset=wine --algo=MC
-python exp.py --task=DV --dataset=iris --algo=MC 
-python exp.py --task=DV --dataset=wine --algo=MC 
-python exp.py --task=DSV --dataset=iris --tuple_to_set=12 --algo=MC 
-python exp.py --task=DSV --dataset=wine --tuple_to_set=15 --algo=MC 
-python exp.py --task=FL --dataset=mnist --algo=MC
-python exp.py --task=FL --dataset=cifar --algo=MC
+python exp.py --task=RI --dataset=iris --base_algo=MC
+python exp.py --task=RI --dataset=wine --base_algo=MC
+python exp.py --task=DV --dataset=iris --base_algo=MC 
+python exp.py --task=DV --dataset=wine --base_algo=MC 
+python exp.py --task=DSV --dataset=iris --tuple_to_set=12 --base_algo=MC 
+python exp.py --task=DSV --dataset=wine --tuple_to_set=15 --base_algo=MC 
+python exp.py --task=FL --dataset=mnist --base_algo=MC
+python exp.py --task=FL --dataset=cifar --base_algo=MC
 ```
 
 ## Citation
