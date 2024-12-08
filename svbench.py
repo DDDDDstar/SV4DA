@@ -16,26 +16,27 @@ from config import config, BENCHMARK, OUT_PRINT_FLUSH_INTERVAL, UTILITY_RECORD_F
 class Task():
     def __init__(self, args):
         self.args = config(args)
-        self.TC = ('TC' in args.optimization_strategy) if args.optimization_strategy is not None else False
-        self.GA = ('GA' in args.optimization_strategy) if args.optimization_strategy is not None else False
-        self.TSS = ('TSS' in args.optimization_strategy) if args.optimization_strategy is not None else False
-        self.parallel_threads_num = 1 if self.GA else args.num_parallel_threads
+        optimization_strategy = args.get('optimization_strategy') if args.get('optimization_strategy') is not None else ''
+        self.TC = 'TC' in optimization_strategy
+        self.GA = 'GA' in optimization_strategy
+        self.TSS = 'TSS' in optimization_strategy
+        self.parallel_threads_num = 1 if self.GA else args.get('num_parallel_threads')
 
-        self.task = args.task
-        self.dataset = args.dataset
-        self.manual_seed = args.manual_seed
+        self.task = args.get('task')
+        self.dataset = args.get('dataset')
+        self.manual_seed = args.get('manual_seed')
         self.utility_function = self.utility_computation_func_load(
-            args.utility_function)
+            args.get('utility_function'))
         if self.utility_function is None:
             print(
-                f"ERROR: Get utility function failed: {args.utility_function}")
+                f"ERROR: Get utility function failed: {args.get('utility_function')}")
             exit(-1)
 
-        self.utility_record_file = args.utility_record_file
+        self.utility_record_file = args.get('utility_record_file')
         self.utility_records = self.read_history_utility_record()
         if self.utility_records is None:
             print(
-                f"ERROR: Read utility record failed: {args.utility_record_file}")
+                f"ERROR: Read utility record failed: {args.get('utility_record_file')}")
             exit(-1)
 
         self.utility_record_write_lock = threading.Lock()
@@ -46,26 +47,27 @@ class Task():
         if self.task in BENCHMARK:
             self.player_num = BENCHMARK[self.task][self.dataset]
         else:
-            self.player_num = args.player_num
+            self.player_num = args.get('player_num')
 
+        base_algo = args.get('base_algo')
         self.shapley = Shapley(
             task=self.task,
             player_num=self.player_num,
             utility_function=self.utility_computation_call,
-            argorithm=args.base_algo,
+            argorithm=base_algo,
             truncation=self.TC,
-            truncation_threshold=args.TC_threshold,
+            truncation_threshold=args.get('TC_threshold'),
             parallel_threads_num=self.parallel_threads_num,
             sampler=Sampler(
-                sampling=args.sampling_strategy,
-                algo=args.base_algo, player_num=self.player_num),
+                sampling=args.get('sampling_strategy'),
+                algo=base_algo, player_num=self.player_num),
             output=Output(
-                convergence_threshold=args.convergence_threshold,
-                cache_size=args.conv_check_num,
+                convergence_threshold=args.get('convergence_threshold'),
+                cache_size=args.get('conv_check_num'),
                 player_num=self.player_num,
-                privacy_protection_measure=args.privacy_protection_measure,
-                privacy_protection_level=args.privacy_protection_level,
-                algo=args.base_algo))
+                privacy_protection_measure=args.get('privacy_protection_measure'),
+                privacy_protection_level=args.get('privacy_protection_level'),
+                algo=base_algo))
 
         self.flush_event = threading.Event()
 
@@ -128,8 +130,6 @@ class Task():
                 print(
                     f'Computing utility with {player_idx + 1} players tasks {time_cost} timeCost {utility} utility...')
                 utility_computation_timecost[player_idx] = time_cost
-        print('Average time cost for computing utility: ',
-              np.mean(list(utility_computation_timecost.values())))
 
     def read_history_utility_record(self):
         self.utility_record_file = f'./Tasks/utility_records/{self.task}_{self.dataset}_{self.manual_seed}{"_GA" if self.GA else ""}{"_TSS" if self.TSS else ""}.log' \
@@ -178,7 +178,5 @@ class Task():
 
 def sv_calc(**kwargs):
     task = Task(args=kwargs)
-
-    task.run()
 
     return task.run()

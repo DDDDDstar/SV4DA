@@ -29,22 +29,13 @@ class Shapley():
         self.truncation_threshold = truncation_threshold
         self.parallel_threads_num = parallel_threads_num
         self.sampler = sampler
-
-        # utility information
-        self.task_total_utility = 0
-        self.empty_set_utility = 0  # Only used for RE
-
-        # runtime records
-        self.start_time = 0
-        self.utility_comp_num = 0
-        self.time_cost_per_utility_comp = []
-        self.truncation_coaliations = set()
-
         self.output = output
 
-        self.threads = []
-
+        self.task_total_utility = 0
         self.CP_epsilon = 0.00001
+
+        self.truncation_coaliations = set()
+        self.threads = []
 
     # check all threads and remove dead threads
     # return the number of alive threads
@@ -94,20 +85,14 @@ class Shapley():
                 permutation[:order+1])
             time_cost += time_cost1
             comp_times += 1
-        results.put(player_id, aft_addition -
-                    bef_addition, comp_times, time_cost)
-        # # update SV
-        # old_SV = self.SV[player_id]
-        # self.SV[player_id] = ((iter_times - 1) * old_SV +
-        #                       aft_addition - bef_addition) / iter_times
-        # self.SV_var[player_id].append(self.SV[player_id])
+        results.put((player_id, aft_addition - bef_addition, comp_times, time_cost))
 
     def MC(self, **kwargs):
         permutation, full_sample, iter_times = self.sampler.sample()
 
         results = queue.Queue()
         if full_sample:
-            return results, True
+            return results, True, iter_times
 
         print('\n Monte Carlo iteration %s: ' % iter_times, permutation)
         if self.parallel_threads_num == 1:
@@ -127,7 +112,7 @@ class Shapley():
 
                 self.threads_controller('finish')
 
-        return results, False
+        return results, False, iter_times
 
     def MLE_parallelable_thread(self,
                                 player_id,
@@ -170,10 +155,10 @@ class Shapley():
         I_mq = []
         for iter_ in range(iter_num):
             for m in range(MLE_M):
-                I_mq, full_sample = self.sampler.sample(
+                I_mq, full_sample, iter_times = self.sampler.sample(
                     q=iter_ / MLE_interval, I_mq=I_mq, m=m)
                 if full_sample:
-                    return results, True
+                    return results, True, iter_times
 
                 if self.parallel_threads_num == 1:
                     for player_id in range(self.player_num):
@@ -189,7 +174,7 @@ class Shapley():
                         self.threads_controller('add', thread)
                     self.threads_controller('finish')
 
-        return results, False
+        return results, False, iter_times
 
     def GT_parallelable_thread(self, player_id, selected_players, results):
         u, t = self.utility_function(selected_players[-1])
@@ -280,7 +265,7 @@ class Shapley():
         results = queue.Queue()
         permutation, full_sample, iter_times = self.sampler.sample()
         if full_sample:
-            return results, True
+            return results, True, iter_times
         z_i = []
         for order, _ in enumerate(permutation):
             if ",".join(map(str, sorted(permutation[:order+1]))) in utility_calculated_coalitions:
@@ -301,7 +286,7 @@ class Shapley():
             utility_calculated_coalitions.add(
                 ",".join(map(str, sorted(permutation[:order+1]))))
         self.threads_controller('finish')
-        return results, False
+        return results, False, iter_times
 
     def problemScale_statistics(self):
         print('【Problem Scale of SV Exact Computation】')
@@ -332,8 +317,6 @@ class Shapley():
             elif self.argorithm == 'CP':
                 base_comp_func = self.CP
 
-        self.start_time = time.time()
-
         N = self.player_num
         # RE paras
         coalitions = set()
@@ -341,20 +324,16 @@ class Shapley():
         Z = 2 * sum([1/k for k in range(1, self.player_num)])
         q_k = [1/Z*(1/k+1/(N-k))
                for k in range(1, N)]
-        results = None
-        iter_times = 0
-        while not self.output.result_process(results, full_sample, iter_times):
+        flag = True
+        while flag or not self.output.result_process(results, full_sample, iter_times):
+            flag = False
             if self.argorithm == 'MLE':
                 self.MLE_interval += int(self.player_num/self.MLE_M)
                 if self.sampler.sampling_strategy == 'antithetic':
                     self.MLE_M *= 2
 
-            res = base_comp_func(
+            results, full_sample, iter_times = base_comp_func(
                 coalitions=coalitions, q_k=q_k) if not callable(self.argorithm)    \
                 else self.argorithm(self.sampler.sample())
-            if self.argorithm == 'GT' or self.argorithm == 'CP':
-                results, full_sample, iter_times = res
-            else:
-                results, full_sample = res
 
         return self.output.aggregator.SV, self.output.aggregator.SV_var
