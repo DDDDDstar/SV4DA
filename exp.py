@@ -31,7 +31,7 @@ def args_parser():
 
     parser.add_argument('--sampling_strategy', type=str, default="random",
                         help="{random, antithetic, stratified}")
-    parser.add_argument('--optimization_strategy', type=bool, default=False,
+    parser.add_argument('--optimization_strategy', type=bool, default=None,
                         help="")
     parser.add_argument('--TC_threshold', type=float, default=0.01,
                         help="truncation threshold")
