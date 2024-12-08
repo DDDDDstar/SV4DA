@@ -13,12 +13,11 @@ from .utils import DNNTrain, DNNTest, find_free_device
 
 
 class RI():
-    def __init__(self, dataset, manual_seed, GA, TSS, parallel_threads_num):
+    def __init__(self, dataset, manual_seed, GA, TSS):
         self.dataset = dataset
         self.manual_seed = manual_seed
         self.GA = GA
         self.TSS = TSS
-        self.parallel_threads_num = parallel_threads_num
         self.dataset_info = {
             'iris': (3, 4, 0.01, 30, 16),
             'wine': (3, 13, 0.001, 100, 16)
@@ -82,6 +81,15 @@ class RI():
         # player setting
         self.players = [feature_idx
                         for feature_idx in range(self.Tst[0][0].reshape(-1).shape[-1])]
+
+        # prepare trained model
+        self.train_model()
+
+        # used only by FIA
+        self.randomSet = []
+        self.testSampleFeatureSV = dict()
+        self.testSampleFeatureSV_var = dict()
+
         # select test samples
         self.num_samples_each_class = 1  # select only one sample in each class
         self.selected_test_samples = []
@@ -96,16 +104,6 @@ class RI():
         else:
             self.selected_test_samples = range(len(self.complete_X_test))
         # print('selected_test_samples: ', self.selected_test_samples)
-
-        # prepare trained model
-        self.train_model()
-
-        # used only by FIA
-        self.randomSet = []
-        self.testSampleFeatureSV = dict()
-        self.testSampleFeatureSV_var = dict()
-
-        self.threads = []
 
     def train_model(self):
         model_path = 'models/attribution_RI-%s.pt' % (

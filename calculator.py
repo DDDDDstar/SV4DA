@@ -356,3 +356,5 @@ class Shapley():
                 results, full_sample, iter_times = res
             else:
                 results, full_sample = res
+
+        return self.output.aggregator.SV, self.output.aggregator.SV_var

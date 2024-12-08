@@ -249,7 +249,7 @@ class Privacy():
 
     def quantization(self, SVs):
         # level=0~1
-        level = int(len(SVs)*self.level)
+        level = int(len(SVs)*1-self.level)
         sorted_SV = sorted(SVs.values())
         interval = int(np.ceil(len(SVs)/level))
         quantization_map = dict()
@@ -273,13 +273,13 @@ class Privacy():
         if len(SVs_var) == len(SVs):
             exposed_idx = dict(
                 sorted(SVs_var.items(),
-                       key=lambda item: item[1])[-int(len(SVs_var)*self.level):]
+                       key=lambda item: item[1])[-int(len(SVs_var)*(1-self.level)):]
             ).keys()
 
         else:
             exposed_idx = dict(
                 sorted(SVs.items(),
-                       key=lambda item: item[1])[-int(len(SVs)*self.level):]
+                       key=lambda item: item[1])[-int(len(SVs)*(1-self.level)):]
             ).keys()
         return dict([(key, (SVs[key] if key in exposed_idx else 0))
                     for key in SVs.keys()])
