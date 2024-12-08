@@ -6,7 +6,7 @@ from svbench import sv_calc
 def args_parser():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--log_file', type=str, default='',
+    parser.add_argument('--log_file', type=str, default='std',
                         help="path of log file")
     parser.add_argument('--num_parallel_threads', type=int, default=1,
                         help="number of parallelThreads")
