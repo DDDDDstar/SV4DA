@@ -6,15 +6,15 @@ This repository [introduces **_SvBench_**](#using), a benchmark framework for de
 
 <img src="./README.assets/SvBench.png" alt="SvBench" style="zoom:30%;" />
 
-As shown in the figure, **_SvBench_** is composed of a config loader, a sampler, a utility calculator, a convergence checker, and an output aggregator for computing SV by iterative rounds. A round of SV calculation is conducted starting from the sampler and ending at the convergence checker. Once the convergence criterion is not met, another round will be initiated as demonstrated in the figure (with dashed arrow). The following two tables summarize the functions of the five modules in **_SvBench_** and the main parameters used by SV computing algorithms. Using the five modules, **_SvBench_** implements five base SV calculation algorithms (**MC**, **RE**, **MLE**, **GT**, and **CP**) and several hybrid algorithms, each combining one base algorithm with a specific efficiency optimization. For more details of SV computing techniques, please refer to the [survey paper](https://arxiv.org/abs/2412.01460).
+As shown in the figure, **_SvBench_** is composed of a config loader, a sampler, a utility calculator, a convergence checker, and an output aggregator for computing SV by iterative rounds. A round of SV calculation is conducted starting from the sampler and ending at the convergence checker. Once the convergence criterion is not met, another round will be initiated as demonstrated in the figure (with dashed arrow). The following two tables summarize the functions of the five modules in **_SvBench_** and the main parameters used by SV computing algorithms. Using these modules, **_SvBench_** implements five base SV computing algorithms (**MC**, **RE**, **MLE**, **GT**, and **CP**) and several hybrid algorithms, each combining one base algorithm with the techniques for efficiency optimization, approximation error reduction, and privacy protection, etc. For more details of SV computing techniques, please refer to the [survey paper](https://arxiv.org/abs/2412.01460).
 
 |          Module          | Description                                                                                                                                                                                         | Main Implemented Techniques                                                                               |
 | :----------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | **configuration loader** | Load the SV computing parameters specified by the users                                                                                                                                             | /                                                                                                         |
 |       **sampler**        | Generate the coalitions or permutations of players based on the configured sampling strategy                                                                                                        | Random Sampling, Stratified Sampling, Antithetic Sampling                                                 |
-|  **utility calculator**  | Compute the utility of the sampled coalitions or permutations. When users specify an efficiency optimization strategy, the utility calculator will use that strategy to accelerate the computation. | Truncation, ML Speedup for Efficiency Optimization                                                        |
+|  **utility calculator**  | Compute the utility of the sampled coalitions or permutations. When users specify an efficiency optimization strategy, the utility calculator will use that strategy to accelerate the computation. | Truncation, ML Speedup (e.g., Gradient Approximation, Test Sample Skip) for Efficiency Optimization                                                        |
 | **convergence checker**  | Determine whether to terminate the SV computation based on the convergence criterion specified in the configuration                                                                                 | SV Ranking                                                                                                |
-|  **output aggregator**   | Generate the final SV of each player. If users specify privacy protection measures, the aggregator will execute those measures before reporting the final results.                                  | Measures (i.e., Differential Privacy, Quantization and Dimension Reduction) for Privacy Protection on SV. |
+|  **output aggregator**   | Generate the final SV of each player. If users specify privacy protection measures, the aggregator will execute those measures before reporting the final results.                                  | Measures (e.g., Differential Privacy, Quantization and Dimension Reduction) for Privacy Protection on SV. |
 
 |      Config      | Options (Default setting is in bold.)                                   |
 | :--------------: | ----------------------------------------------------------------------- |
@@ -27,9 +27,11 @@ As shown in the figure, **_SvBench_** is composed of a config loader, a sampler,
 
 ## <span id="using"> Get Started </span>
 
-### Code Preparation
+Developers need three main steps to use **_SvBench_** to generate SV for their targeted DA tasks: (1) [Code Preparation and Downloading dependencies](#code_preparation), (2) [DA Task Preparation and Cooperative Game Modeling](#task_preparation), and (3) [SV Computation](#computation)
 
-To use **_SvBench_**, users need to download all the codes to their project directory, which is supposed to be looked like this:
+### <span id="code_preparation"> Code Preparation and Downloading dependencies </span>
+
+To use **_SvBench_**, developers first need to download all the codes to their project directory, which is supposed to be looked like this:
 
 ```
 .
@@ -41,24 +43,24 @@ To use **_SvBench_**, users need to download all the codes to their project dire
 │   ├── nets.py
 │   ├── result_interpretation.py
 │   └── utils.py
-├── calculator.py
 ├── config.py
-├── output.py
-<!--├── privacy.py- 这个模块就不需要了，直接放进output.py作为一个单独的class-->
 ├── sampler.py
+├── calculator.py
+├── checker.py
+├── output.py
 └── svbench.py
 ```
 
-### Downloading dependencies
+Then, download the necessary dependencies through the following command:
 
 ```
 pip3 install -r requirements.txt
 ```
 
 
-### DA Task Preparation and Cooperative Game Modeling
+### <span id="task_preparation"> DA Task Preparation and Cooperative Game Modeling </span>
 
-Before using **_SvBench_** to implement a specific SV computing algorithm, users need to properly prepare their targeted DA task, specifying the player and utility function in the task for modeling the task as a cooperative game. Guidelines for cooperative game modelling can be found in our [survey paper](https://arxiv.org/abs/2412.01460).
+After the above step, developers need to properly prepare their targeted DA task, specifying the player and utility function in the task for modeling the task as a cooperative game. Guidelines for cooperative game modelling can be found in our [survey paper](https://arxiv.org/abs/2412.01460).
 
 In this repository, we show three typical DA tasks, namely **Result Interpretation(RI)**, **Data Valuation(DV)**, and **Federated Learning(FL)**, as example use cases. The datasets used by each task (which are generated by `Task/data_preparation.py`) and the cooperative game modelling for each task are summarized in the following tables:
 
@@ -83,9 +85,9 @@ In this repository, we show three typical DA tasks, namely **Result Interpretati
 -   The DV tasks on Iris and Wine use SV to evaluate the importance of 120 iris plants and 142 wine samples to improve the classification accuracy.
 -   The FL tasks on MNIST and Cifar-10 distribute the two datasets to 10 devices, using SV to valuate the local models trained by those devices for the higher accuracy in handwritten digits classification and object recognition.
 
-### SV Computation
+### <span id="computation"> SV Computation <\span>
 
-Given a well-prepared DA task, users then need to specify the following parameters for implementing a specific SV computing algorithm in the prepared task:
+Given a well-prepared DA task, developers then need to specify the following parameters for implementing a specific SV computing algorithm for the prepared task:
 
 |         Parameter          |                       Scope                        | Description                                                  | Default  | Type  |
 | :------------------------: | :------------------------------------------------: | ------------------------------------------------------------ | :------: | :---: |
@@ -105,7 +107,7 @@ Given a well-prepared DA task, users then need to specify the following paramete
 
 
 
-After the above steps, users can import the `sv_calc` function into their own python file through the command `from svbench import sv_calc` and invoke the `sv_calc` function with the specified parameters for obtaining SV computing results from **_SvBench_**. 
+After the above steps, developers can import the `sv_calc` function into their own python file through the command `from svbench import sv_calc` and invoke the `sv_calc` function with the specified parameters for obtaining SV computing results from **_SvBench_**. 
 Here, we provide some examples of invoking `sv_calc`.
 
 (1) run a base SV computing algorithm, **MC**, in six example DA tasks.
@@ -145,22 +147,22 @@ sv_calc(task='DV', dataset='iris', algo='MC', privacy_protection_measure='DP', p
 
 ## Extend **_SvBench_**
 
-To run <u>user-specific task</u>, there are the following parameters, which users could choose to set to remake the corresponding module:
+To run <u>user-specific task</u>, there are the following parameters, which developers could choose to set to remake the corresponding module:
 
 |         Parameter          |           Scope           | Description                                                  | Remade modules    | Type     |
 | :------------------------: | :-----------------------: | ------------------------------------------------------------ | ----------------- | -------- |
 |            task            |             -             | The name of the user-specific task.                          | calculator        | str      |
 |         player_num         |             -             | The number of players in user-specific task.                 | calculator        | int      |
 |      utility_function      |             -             | The function for utility computation, which accepts a `list` parameter representing the players coalition to calculate utility and returns a value representing the utility | calculator        | function |
-|         base_algo          |             -             | The function for user-specific SV calculation algorithm, which accepts the sampling function result as the parameter. | calculator        | function |
-|          sampling          |             -             | The sampling function for user-specific SV calculation algorithm, which result returned is the input parameter of the algorithm. | sampler           | function |
+|         base_algo          |             -             | The function for user-specific SV computing algorithm, which accepts the sampling function result as the parameter. | calculator        | function |
+|          sampling          |             -             | The sampling function for user-specific SV computing algorithm, which result returned is the input parameter of the algorithm. | sampler           | function |
 |         full_check         | `permutation` `coalition` | The object of the convergence check.                         | output aggregator | str      |
 | privacy_protection_measure |             -             | The function for privacy protection for the results.         |                   | function |
 |                            |                           |                                                              |                   |          |
 |                            |                           |                                                              |                   |          |
 
 ## Experiments
-Our survey paper uses **_SvBench_** to conduct the following four sets of experiments on the aforementioned example DA tasks in order to answer the questions proposed in the paper:
+Our survey paper has utilized **_SvBench_** to conduct the following four sets of experiments on the example DA tasks in order to answer the questions proposed in the paper:
 
 (1) We compare the efficiency of five base SV computing algorithms with several hybrid algorithms, answering the question **Can the hybrid SV approximation algorithms always ensure higher efficiency than the algorithm using only one of the integrated techniques?**
 
@@ -384,81 +386,127 @@ python exp.py --task=FL --dataset=cifar --algo=MC --sampling=antithetic
 ### Instructions for the **third** set of experiments
 (1) experiments on **RI_Iris** task
 ```
+# FIA-U: SV-driven feature attribution attack based on a uniform random distribution
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC
+
 # differential privacy （protection strength from low to high）
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python exp.py --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+
+# FIA-G: SV-driven feature attribution attack based on a uniform random distribution
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC
+
+# differential privacy （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+
+# quantization （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+
+
+# dimension reduction （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (2) experiments on **RI_Wine** task
 ```
+# FIA-U: SV-driven feature attribution attack based on a uniform random distribution
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC
+
 # differential privacy （protection strength from low to high）
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python exp.py --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_U --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+
+# FIA-G: SV-driven feature attribution attack based on a uniform random distribution
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC
+
+# differential privacy （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+
+# quantization （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+
+
+# dimension reduction （protection strength from low to high）
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=FIA_G --task=RI --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (3) experiments on **DV_Iris** task
 ```
 # differential privacy （protection strength from low to high）
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python exp.py --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=iris --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 (4) experiments on **DV_Wine** task
 ```
 # differential privacy （protection strength from low to high）
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.01
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.05
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DP --privacy_protection_level=0.1
 
 # quantization （protection strength from low to high）
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=QT --privacy_protection_level=0.9
 
 
 # dimension reduction （protection strength from low to high）
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
-python exp.py --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.1
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.5
+python attack_exp.py --attack=MIA --task=DV --dataset=wine --algo=MC --privacy_protection_measure=DR --privacy_protection_level=0.9
 ```
 
 ### Instructions for the **final** set of experiments
+Here, we create two new DV tasks on Iris and Wine, denoted as DSV_Iris and DSV_Wine, respectively. In the two tasks, the players are datasets, each containing 10% of tuples in the original dataset. We achieve the transformation from data tuple valuation to data set valuation by properly setting the parameter `--tuple_to_set`.
+
 ```
 python exp.py --task=RI --dataset=iris --algo=MC
 python exp.py --task=RI --dataset=wine --algo=MC
