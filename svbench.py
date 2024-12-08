@@ -16,8 +16,9 @@ from config import config, BENCHMARK, OUT_PRINT_FLUSH_INTERVAL, UTILITY_RECORD_F
 class Task():
     def __init__(self, args):
         self.args = config(args)
-        self.GA = 'GA' in args.optimization_strategy
-        self.TSS = 'TSS' in args.optimization_strategy
+        self.TC = ('TC' in args.optimization_strategy) if args.optimization_strategy is not None else False
+        self.GA = ('GA' in args.optimization_strategy) if args.optimization_strategy is not None else False
+        self.TSS = ('TSS' in args.optimization_strategy) if args.optimization_strategy is not None else False
         self.parallel_threads_num = 1 if self.GA else args.num_parallel_threads
 
         self.task = args.task
@@ -52,7 +53,7 @@ class Task():
             player_num=self.player_num,
             utility_function=self.utility_computation_call,
             argorithm=args.base_algo,
-            truncation='TC' in args.optimization_strategy,
+            truncation=self.TC,
             truncation_threshold=args.TC_threshold,
             parallel_threads_num=self.parallel_threads_num,
             sampler=Sampler(
