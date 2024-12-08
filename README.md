@@ -146,10 +146,12 @@ sv_calc(task='DV', dataset='iris', base_algo='MC', privacy_protection_measure='D
 ```
 
 ## Extend **_SvBench_**
-**_SvBench_**  provides APIs in its modules (marked by an API icon in the [figure](#overview)) for users to extend this benchmark. One can configure the modules he expects to extend by his user-specific parameters at the SV computation step and submit the new functions corresponding to those modules. 
-The following table summarizes the modules that can be extended by configurating user-specific parameters and functions. A typical example is that users can extend the utility calculator module by setting the parameter `task=new_DA_task_name` and submitting a new utility function specific to this new DA task.
+**_SvBench_**  provides APIs in its modules (marked by an API icon in the [figure](#overview)) for developers to extend this benchmark. One can configure the modules he expects to extend by his user-specific parameters at the SV computation step and submit the new functions corresponding to those modules. 
+The following table summarizes the modules that can be extended by configurating user-specific parameters and functions. 
 
-SVBench will check the legitimacy and validity of the received parameters and functions and use the valid parameters and functions to execute the operations in the corresponding modules. Moreover, with user permissions, SVBench will embed the valid new functions into the corresponding modules to provide more development choices for future use.
+A typical example is that a developer expects to extend the utility calculator module with a new function for computing utility in a new data valuation task (denoted by DV_Mnist) which evaluates the importance of 60,000 training samples in the Mnist dataset for improving the handwritten digits classification accuracy. The developer can achieve such an extension by setting the parameter `task=DV_Mnist, player_num=60000, utility_function=pointer_to_utility_computation_in_DV_Mnist_py` and submitting a `DV_Mnist.py` file (containing the `utility_computation` function specific to DV_Mnist task) to the `Task` folder. 
+
+**_SvBench_** will check the legitimacy and validity of the received parameters and functions and use the valid parameters and functions to execute the operations in the corresponding modules. Moreover, with user permissions, **_SvBench_** will embed the valid new functions into the corresponding modules to provide more development choices for future use.
 
 <!--To run <u>user-specific task</u>, there are the following parameters, which developers could choose to set to remake the corresponding module:-->
 
