@@ -10,7 +10,7 @@ from Tasks import data_valuation, federated_learning, result_interpretation, dat
 from calculator import Shapley
 from sampler import Sampler
 from output import Output
-from config import config, BENCHMARK, BENCHMARK_ALGO, OUT_PRINT_FLUSH_INTERVAL, UTILITY_RECORD_FILEWRITE_INTERVAL
+from config import config, BENCHMARK, OUT_PRINT_FLUSH_INTERVAL, UTILITY_RECORD_FILEWRITE_INTERVAL
 
 
 class Task():
@@ -44,10 +44,8 @@ class Task():
 
         if self.task in BENCHMARK:
             self.player_num = BENCHMARK[self.task][self.dataset]
-            full_check_type = BENCHMARK_ALGO[args.base_algo][0]
         else:
             self.player_num = args.player_num
-            full_check_type = args.full_check
 
         self.shapley = Shapley(
             task=self.task,
@@ -64,7 +62,6 @@ class Task():
                 convergence_threshold=args.convergence_threshold,
                 cache_size=args.conv_check_num,
                 player_num=self.player_num,
-                full_check_type=full_check_type,
                 privacy_protection_measure=args.privacy_protection_measure,
                 privacy_protection_level=args.privacy_protection_level,
                 algo=args.base_algo))

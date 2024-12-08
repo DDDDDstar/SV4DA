@@ -13,10 +13,9 @@ class Output():
                  player_num,
                  privacy_protection_measure,
                  privacy_protection_level,
-                 full_check_type,
                  algo):
         self.aggregator = Aggregator(algo, player_num)
-        self.checker = Checker(full_check_type, player_num,
+        self.checker = Checker(player_num,
                                cache_size, convergence_threshold)
         self.privacy = Privacy(
             measure=privacy_protection_measure,

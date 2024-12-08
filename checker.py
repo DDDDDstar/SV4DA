@@ -3,8 +3,7 @@ import numpy as np
 
 
 class Checker():
-    def __init__(self, full_check_type, player_num, cache_size, threshold):
-        self.full_check_type = full_check_type
+    def __init__(self, player_num, cache_size, threshold):
         self.player_num = player_num
         self.cache_size = cache_size
         self.threshold = threshold

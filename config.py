@@ -3,13 +3,6 @@ from collections import namedtuple
 
 OUT_PRINT_FLUSH_INTERVAL = 5
 UTILITY_RECORD_FILEWRITE_INTERVAL = 10
-BENCHMARK_ALGO = {
-    'MC': ('permutation'),
-    'MLE': ('coalition'),
-    'GT': ('coalition'),
-    'RE': ('permutation'),
-    'CP': ('permutation')
-}
 BENCHMARK = {
     'DV': {
         'iris': (120),
@@ -39,7 +32,7 @@ def para_set(args):
     # only required for bench tasks:
     bench_required = ['dataset']
     # only required for user-specific tasks:
-    user_required = ['utility_function', 'full_check', 'player_num']
+    user_required = ['utility_function', 'player_num']
     paras = {'log_file': 'std',
              'utility_record_file': '',
              'optimization_strategy': None,
