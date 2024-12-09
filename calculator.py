@@ -5,23 +5,30 @@ import threading
 import queue
 import pulp
 import warnings
+import portalocker
+import os
 import numpy as np
+
+from config import UTILITY_RECORD_FILEWRITE_INTERVAL
 
 warnings.filterwarnings('ignore')
 
 
 class Shapley():
-    def __init__(self, task, player_num,
-                 utility_function,
-                 argorithm,
-                 truncation,
-                 truncation_threshold,
-                 parallel_threads_num,
-                 sampler,
-                 output):
+    def __init__(self, task, player_num, dataset,
+                 utility_function, argorithm,
+                 truncation, truncation_threshold,
+                 parallel_threads_num, manual_seed,
+                 GA, TSS,
+                 utility_record_file,
+                 sampler, output):
         self.task = task
         self.player_num = player_num
         self.utility_function = utility_function
+        self.dataset = dataset
+        self.GA = GA
+        self.TSS = TSS
+        self.manual_seed = manual_seed
 
         # SV computation method's components
         self.argorithm = argorithm
@@ -36,6 +43,18 @@ class Shapley():
 
         self.truncation_coaliations = set()
         self.threads = []
+
+        self.utility_record_file = utility_record_file
+        self.utility_records = self.read_history_utility_record()
+        if self.utility_records is None:
+            print(
+                f"ERROR: Read utility record failed: {utility_record_file}")
+            exit(-1)
+
+        self.utility_record_write_lock = threading.Lock()
+        self.utility_record_filewrite_lock = threading.Lock()
+        self.utility_record_write_flag = False
+        self.dirty_utility_record_num = 0
 
     # check all threads and remove dead threads
     # return the number of alive threads
@@ -62,6 +81,58 @@ class Shapley():
                 thread.join()
             self.threads = []
 
+    def utility_computation_call(self, player_list):
+        utility_record_idx = str(
+            sorted(player_list)
+            if (self.task != 'DV' and self.task != 'DSV') or (not self.GA)
+            else player_list)
+        if utility_record_idx in self.utility_records:
+            return self.utility_records[utility_record_idx]
+
+        start_time = time.time()
+        utility = self.utility_function(player_list)
+        time_cost = time.time() - start_time
+        self.write_utility_record(utility_record_idx, utility, time_cost)
+        return utility, time_cost
+
+    def read_history_utility_record(self):
+        self.utility_record_file    \
+            = f'./Tasks/utility_records/{self.task}_{self.dataset}_{self.manual_seed}{"_GA" if self.GA else ""}{"_TSS" if self.TSS else ""}.log' \
+            if self.utility_record_file == '' else self.utility_record_file
+
+        if os.path.exists(self.utility_record_file):
+            with portalocker.Lock(self.utility_record_file, 'r', encoding='utf-8', flags=portalocker.LOCK_SH) as file:
+                utility_records = eval(file.read().strip())
+                # utility_records = json.load(file)
+            return utility_records
+        else:
+            return {str([]): (0, 0)}
+
+    def write_utility_record(self, utility_record_idx, utility, time_cost):
+        if utility_record_idx in self.utility_records:
+            return
+
+        with self.utility_record_write_lock:
+            self.utility_records[utility_record_idx] = (utility, time_cost)
+            self.dirty_utility_record_num += 1
+
+        if self.dirty_utility_record_num > UTILITY_RECORD_FILEWRITE_INTERVAL    \
+                and self.utility_record_filewrite_lock.acquire(blocking=False):
+            create = False
+            if not os.path.exists(self.utility_record_file):
+                os.mknod(self.utility_record_file)
+                create = True
+            with portalocker.Lock(self.utility_record_file, mode="r+", timeout=0) as file:
+                with self.utility_record_write_lock:
+                    if not create:
+                        self.utility_records.update(eval(file.read().strip()))
+                        # self.utility_records.update(json.load(file))
+                    self.dirty_utility_record_num = 0
+                    ur = self.utility_records.copy()
+                file.seek(0)
+                file.write(str(ur))
+            self.utility_record_filewrite_lock.release()
+
     def if_truncation(self, bef_addition):
         utility_change_rate = np.abs((self.task_total_utility - bef_addition)
                                      / (self.task_total_utility + 10**(-15)))
@@ -85,7 +156,8 @@ class Shapley():
                 permutation[:order+1])
             time_cost += time_cost1
             comp_times += 1
-        results.put((player_id, aft_addition - bef_addition, comp_times, time_cost))
+        results.put((player_id, aft_addition -
+                    bef_addition, comp_times, time_cost))
 
     def MC(self, **kwargs):
         permutation, full_sample, iter_times = self.sampler.sample()
@@ -219,8 +291,7 @@ class Shapley():
         return results, False, iter_times
 
     def CP(self, **kwargs):
-        N = self.player_num
-        num_measurement = int(N/2)
+        num_measurement = int(self.player_num/2)
 
         phi_t = queue.Queue()
         permutation, full_sample, iter_times = self.sampler.sample()
@@ -288,21 +359,8 @@ class Shapley():
         self.threads_controller('finish')
         return results, False, iter_times
 
-    def problemScale_statistics(self):
-        print('【Problem Scale of SV Exact Computation】')
-        print('Total number of players: ', self.player_num)
-        print('(coalition sampling) Total number of utility computations: ',
-              '%e' % (2*self.player_num * 2**(self.player_num-1)))
-        print('(permutation sampling) Total number of utility computations:',
-              '%e' % (2*self.player_num * math.factorial(self.player_num)))
-        self.task_total_utility, _ = self.utility_function(
-            range(self.player_num))
-        print('The task\'s total utility: ', self.task_total_utility)
-        self.output.task_total_utility = self.task_total_utility
-
     def SV_calculate(self):
         # print problem scale and the task's overall utility
-        self.problemScale_statistics()
         if not callable(self.argorithm):
             if self.argorithm == 'MC':
                 base_comp_func = self.MC
@@ -316,15 +374,19 @@ class Shapley():
                 base_comp_func = self.GT
             elif self.argorithm == 'CP':
                 base_comp_func = self.CP
+        else:
+            base_comp_func = self.argorithm
 
-        N = self.player_num
         # RE paras
         coalitions = set()
         # GT paras
         Z = 2 * sum([1/k for k in range(1, self.player_num)])
-        q_k = [1/Z*(1/k+1/(N-k))
-               for k in range(1, N)]
+        q_k = [1/Z*(1/k+1/(self.player_num-k))
+               for k in range(1, self.player_num)]
         flag = True
+        results = None
+        full_sample = False
+        iter_times = 0
         while flag or not self.output.result_process(results, full_sample, iter_times):
             flag = False
             if self.argorithm == 'MLE':

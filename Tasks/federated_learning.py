@@ -22,6 +22,7 @@ class FL():
         self.num_classes, self.num_clients, self.max_round,     \
             self.num_channels, self.local_ep, self.local_bs,    \
             self.lr, self.decay_rate, multiplier = self.dataset_info[dataset]
+        self.ridx = 0
         self.device = find_free_device()
         self.model = None
 
@@ -33,10 +34,18 @@ class FL():
 
         self.Tst = torch.load(tst_path)
         self.stored_gradients = dict()
+        self.skippable_test_sample = [
+            dict([(no, set()) for no in range(self.num_clients)])
+            for ridx in range(self.max_round)]
 
         # player setting
         self.player_datasets = [
             torch.load('data/%s1/train%s.pt' % (dataset, no),)
+            for no in range(self.num_clients)]
+        self.player_data_size = [len(self.player_datasets[no])
+                                 for no in range(self.num_clients)]
+        self.players = [
+            dict([(ridx, None) for ridx in range(self.max_round)])
             for no in range(self.num_clients)]
 
         model_paths = ['models/FL_%s_R%sC%s.pt' % (
@@ -47,7 +56,31 @@ class FL():
             for trainer_idx in range(len(self.player_datasets))]
         if False not in [os.path.exists(model_path)
                          for model_path in model_paths]:
-            pass  # all needed models have been trained
+            global_model = self.model_initiation()
+            for ridx in range(self.max_round):
+                localUpdates = dict()
+                p_k = dict()
+                for player_idx in range(len(self.player_datasets)):
+                    localUpdates[player_idx] = torch.load('models/FL_%s_R%sC%s.pt' % (
+                        (self.dataset if self.manual_seed == 42
+                         else (self.dataset+"-"+str(self.manual_seed))),
+                        ridx, player_idx),
+                        map_location=self.device)
+                    self.players[player_idx][ridx] = localUpdates[player_idx]
+                    p_k[player_idx] = len(self.player_datasets[player_idx])
+
+                # prepare stored_gradients and skippable_test_sample
+                self.stored_gradients[ridx] = (localUpdates, p_k,
+                                               global_model.state_dict())
+                for player_idx, local_model in localUpdates.items():
+                    tmp_model = self.model_initiation()
+                    tmp_model.load_state_dict(local_model)
+                    DNNTest(tmp_model, self.Tst,
+                            recordSkippableSample=(self.skippable_test_sample[ridx],
+                                                   player_idx))
+                # aggregation
+                agg_results = self.weighted_avg(localUpdates, p_k)
+                global_model.load_state_dict(agg_results)
         else:
             # model initialize and training
             # FedAvg
@@ -65,6 +98,8 @@ class FL():
                         model=global_model, trn_data=self.player_datasets[player_idx],
                         lr=self.lr*(self.decay_rate**ridx), epoch=self.local_ep,
                         batch_size=self.local_bs, loss_func=loss_func).state_dict()
+                    self.players[player_idx][ridx] = localUpdates[player_idx]
+
                     p_k[player_idx] = len(self.player_datasets[player_idx])
                     torch.save(localUpdates[player_idx],
                                'models/FL_%s_R%sC%s.pt' % (
@@ -73,25 +108,24 @@ class FL():
                         ridx, player_idx)
                     )
                     torch.cuda.empty_cache()
+                    print(
+                        f'Round {ridx} player {player_idx} time cost: {time.time()-pstar_time}')
                     sys.stdout.flush()
+
+                # prepare stored_gradients and skippable_test_sample
+                self.stored_gradients[ridx] = (localUpdates, p_k,
+                                               global_model.state_dict())
+                for player_idx, local_model in localUpdates.items():
+                    tmp_model = self.model_initiation()
+                    tmp_model.load_state_dict(local_model)
+                    DNNTest(tmp_model, self.Tst,
+                            recordSkippableSample=(self.skippable_test_sample[ridx],
+                                                   player_idx))
+
                 # aggregation
                 agg_results = self.weighted_avg(localUpdates, p_k)
                 global_model.load_state_dict(agg_results)
                 print(f'Round {ridx} time cost: {time.time()-start_time}')
-
-        self.player_data_size = [len(self.player_datasets[no])
-                                 for no in range(self.num_clients)]
-        self.players = [
-            dict([(ridx, torch.load('models/FL_%s_R%sC%s.pt' % (
-                (self.dataset if self.manual_seed == 42
-                 else (self.dataset+"-"+str(self.manual_seed))),
-                ridx, no),
-                map_location=self.device))
-                for ridx in range(self.max_round)])
-            for no in range(self.num_clients)]
-
-        self.skippable_test_sample = dict([(player_id, set())
-                                           for player_id in range(len(self.players))])
 
     def weighted_avg(self, w_locals, p_k):
         parameter_keys = list(w_locals.values())[0].keys()

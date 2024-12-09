@@ -13,6 +13,8 @@ class Output():
                  player_num,
                  privacy_protection_measure,
                  privacy_protection_level,
+                 task_total_utility,
+                 task_emptySet_utility,
                  algo):
         self.aggregator = Aggregator(algo, player_num)
         self.checker = Checker(player_num,
@@ -20,12 +22,14 @@ class Output():
         self.privacy = Privacy(
             measure=privacy_protection_measure,
             level=privacy_protection_level)
-        self.task_total_utility = 0
+        self.task_total_utility = task_total_utility
+        self.task_emptySet_utility = task_emptySet_utility
 
     def result_process(self, results, full_sample, iter_times):
         if results is None:
             return False
-        SVs, SVs_var, utility_comp_times, time_cost = self.aggregator.aggregate(results, iter_times, self.task_total_utility)
+        SVs, SVs_var, utility_comp_times, time_cost = self.aggregator.aggregate(
+            results, iter_times, self.task_total_utility, self.task_emptySet_utility)
         if not full_sample:
             if not self.checker.convergence_check(SVs):
                 print(f'Iteration {iter_times} done:')
@@ -61,36 +65,39 @@ class Aggregator():
         self.utility_comp_times = 0
         self.time_cost = 0
 
-        N = self.player_num
         if self.algo == 'MC':
             self.SV_comp_times = dict([(player_id, 0)
-                                       for player_id in range(N)])
+                                       for player_id in range(self.player_num)])
 
         if self.algo == 'GT':
             self.utilities = []
 
         if self.algo == 'RE':
             self.utilities = {0: 0}
-            self.A_RE = np.zeros((N, N))
-            for i in range(N):
-                for j in range(N):
+            self.A_RE = np.zeros((self.player_num, self.player_num))
+            for i in range(self.player_num):
+                for j in range(self.player_num):
                     if i == j:
-                        self.A_RE[i, j] = sum([1/N/(N-k) for k in range(1, N)]) / \
-                            sum([1/k/(N-k) for k in range(1, N)])
+                        self.A_RE[i, j] = sum([1/self.player_num/(self.player_num-k) for k in range(1, self.player_num)]) / \
+                            sum([1/k/(self.player_num-k)
+                                for k in range(1, self.player_num)])
                     else:
-                        self.A_RE[i, j] = 1/N/(N-1) *\
-                            sum([(k-1)/(N-k) for k in range(2, N)]) / \
-                            sum([1/k/(N-k) for k in range(1, N)])
-            self.z_RE = np.array([0 for _ in range(N)]).reshape(1, -1)
+                        self.A_RE[i, j] = 1/self.player_num/(self.player_num-1) *\
+                            sum([(k-1)/(self.player_num-k) for k in range(2, self.player_num)]) / \
+                            sum([1/k/(self.player_num-k)
+                                for k in range(1, self.player_num)])
+            self.z_RE = np.array(
+                [0 for _ in range(self.player_num)]).reshape(1, -1)
 
         if self.algo == 'CP':
-            self.num_measurement = int(N/2)
+            self.num_measurement = int(self.player_num/2)
             self.y_CP = dict([(m, []) for m in range(self.num_measurement)])
-            A_CP = np.random.binomial(1, 0.5, size=(self.num_measurement, N))
+            A_CP = np.random.binomial(1, 0.5, size=(
+                self.num_measurement, self.player_num))
             self.A_CP = 1 / np.sqrt(self.num_measurement) * (2 * A_CP - 1)
             self.CP_epsilon = 0.00001
 
-    def aggregate(self, results, iter_times, task_total_utility):
+    def aggregate(self, results, iter_times, task_total_utility, task_emptySet_utility):
         if self.algo == 'MC':
             self.MC_aggregate(results)
         elif self.algo == 'MLE':
@@ -100,7 +107,8 @@ class Aggregator():
         elif self.algo == 'CP':
             self.CP_aggregate(results, iter_times, task_total_utility)
         elif self.algo == 'RE':
-            self.RE_aggregate(results, task_total_utility)
+            self.RE_aggregate(results, task_total_utility,
+                              task_emptySet_utility)
         return self.SV, self.SV_var, self.utility_comp_times, self.time_cost
 
     def MC_aggregate(self, results):
@@ -209,36 +217,40 @@ class Aggregator():
 
         # update SV
         self.SV = dict([(player_id, sv_mean+sv_variance[player_id])
-                        for player_id in range(N)])
+                        for player_id in range(self.player_num)])
         for player_id in range(self.player_num):
             self.SV_var[player_id].append(self.SV[player_id])
 
-    def RE_aggregate(self, results, task_total_utility):
+    def RE_aggregate(self, results, task_total_utility, task_emptySet_utility):
+        (z_i, results) = results
         while not results.empty():
             order, value, utility_comp_times, timeCost = results.get()
-            self.utilities[len(z)+order] = value
+            self.utilities[len(self.z_RE)+order] = value
             self.utility_comp_times += utility_comp_times
             self.time_cost += timeCost
 
-            # regression computation
-            z = (np.concatenate((z, np.array(z_i))) if len(z_i) > 0 else z)
-            b = np.zeros((self.player_num, 1))
-            E_Z = 0.5*np.ones((self.player_num, 1))
-            for (sample_id, z_i) in enumerate(z):
-                b += (z_i.reshape(-1, 1) * self.utilities[sample_id]) / len(z)
-            inv_A = np.linalg.inv(self.A_RE)
-            ones = np.ones((self.player_num, 1))
-            beta = np.linalg.inv(self.A_RE).dot(
-                b-ones
-                * ((ones.T.dot(inv_A).dot(b)-task_total_utility)
-                   / ones.T.dot(inv_A).dot(ones))
-            ).reshape(-1)
+        # regression computation
+        self.z_RE = (np.concatenate((self.z_RE, np.array(z_i)))
+                     if len(z_i) > 0 else self.z_RE)
+        b = np.zeros((self.player_num, 1))
+        E_Z = 0.5*np.ones((self.player_num, 1))
+        for (sample_id, z_i) in enumerate(self.z_RE):
+            # b += (z_i.reshape(-1, 1) * self.utilities[sample_id]) / len(z)
+            b += (z_i.reshape(-1, 1) * self.utilities[sample_id] -
+                  E_Z * task_emptySet_utility) / len(self.z_RE)
+        inv_A = np.linalg.inv(self.A_RE)
+        ones = np.ones((self.player_num, 1))
+        beta = np.linalg.inv(self.A_RE).dot(
+            b-ones
+            * ((ones.T.dot(inv_A).dot(b)-task_total_utility)
+               / ones.T.dot(inv_A).dot(ones))
+        ).reshape(-1)
 
-            # update SV
-            self.SV = dict([(player_id, beta[player_id])
-                            for player_id in range(self.player_num)])
-            for player_id in range(self.player_num):
-                self.SV_var[player_id].append(self.SV[player_id])
+        # update SV
+        self.SV = dict([(player_id, beta[player_id])
+                        for player_id in range(self.player_num)])
+        for player_id in range(self.player_num):
+            self.SV_var[player_id].append(self.SV[player_id])
 
 
 class Privacy():
@@ -248,7 +260,7 @@ class Privacy():
 
     def quantization(self, SVs):
         # level=0~1
-        level = int(len(SVs)*1-self.level)
+        level = int(len(SVs)*(1-self.level))
         sorted_SV = sorted(SVs.values())
         interval = int(np.ceil(len(SVs)/level))
         quantization_map = dict()
