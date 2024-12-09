@@ -83,10 +83,10 @@ def config(args):
     if para_set(args) == -1:
         exit(-1)
     print(f'Experiment arguments:\n{args}')
-    ARGS = namedtuple('ARGS', args.keys())
-    args = ARGS(**args)
+    # ARGS = namedtuple('ARGS', args.keys())
+    # args = ARGS(**args)
 
-    if open_log_file(args.log_file) == -1:
+    if open_log_file(args.get('log_file')) == -1:
         exit(-1)
 
     return args

@@ -31,17 +31,18 @@ class Sampler():
         return selected_players
 
     def MC_sample(self):
+        last= self.permutations[-1] if len(self.permutations) > 0 else list(range(self.player_num))
         if self.sampling == 'random':
             permutation = self.generateRandomPermutation()
         elif self.sampling == 'antithetic':
             permutation = self.generateRandomPermutation() if self.sampling_times % 2 == 1  \
-                else list(reversed(self.permutations[-1]))
+                else list(reversed(last))
         elif self.sampling == 'stratified':
             permutation = self.generateRandomPermutation() if self.sampling_times % len(last) == 1  \
-                else self.permutations[-1][-1:] + self.permutations[-1][:-1]
+                else last[-1:] + last[:-1]
         if permutation is None:
             return None, True
-        self.permutations.add(",".join(map(str, permutation)))
+        self.permutations.append(",".join(map(str, permutation)))
         return permutation, False
 
     def MLE_sample(self, q, I_mq, m):
@@ -78,10 +79,12 @@ class Sampler():
         self.sampling_times += 1
         if not callable(self.sampling):
             if self.algo in ['MC', 'CP', 'RE']:
-                return self.MC_sample(), self.sampling_times
+                res = self.MC_sample()
+                return res[0], res[1], self.sampling_times
             elif self.algo == 'MLE':
-                return self.MLE_sample(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m'))
+                return self.MLE_sample(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m')), self.sampling_times
             elif self.algo == 'GT':
-                return self.GT_sample(kwargs.get('q_k'), kwargs.get('last')), self.sampling_times
+                res = self.GT_sample(kwargs.get('q_k'), kwargs.get('last'))
+                return res[0], res[1], self.sampling_times
         else:
             return self.sampling()

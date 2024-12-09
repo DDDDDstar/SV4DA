@@ -23,25 +23,23 @@ class Output():
         self.task_total_utility = 0
 
     def result_process(self, results, full_sample, iter_times):
-        self.aggregator.aggregate(results, iter_times, self.task_total_utility)
+        if results is None:
+            return False
+        SVs, SVs_var, utility_comp_times, time_cost = self.aggregator.aggregate(results, iter_times, self.task_total_utility)
         if not full_sample:
-            if not self.checker.convergence_check():
+            if not self.checker.convergence_check(SVs):
                 print(f'Iteration {iter_times} done:')
-                print(f"Current SV: {self.aggregator.SV}")
+                print(f"Current SV: {SVs}")
                 print(
-                    f"Current times of utility computation: {self.aggregator.utility_comp_times}")
+                    f"Current times of utility computation: {utility_comp_times}")
                 return False
         else:
             print("Full sample!")
 
-        SV = self.aggregator.SV
-        SV_var = self.aggregator.SV_var
-        time_cost = self.aggregator.time_cost
-        utility_comp_times = self.aggregator.utility_comp_times
         self.privacy.privacy_protect(
-            SV, SV_var)
-        print(f"Final Resultant SVs: {SV}")
-        print(f"Final Resultant SV_var: {SV_var}")
+            SVs, SVs_var)
+        print(f"Final Resultant SVs: {SVs}")
+        print(f"Final Resultant SV_var: {SVs_var}")
         print(f"Total runtime: {time_cost}")
         print(
             f"Total times of utility computation: {utility_comp_times}")
@@ -63,16 +61,16 @@ class Aggregator():
         self.utility_comp_times = 0
         self.time_cost = 0
 
+        N = self.player_num
         if self.algo == 'MC':
             self.SV_comp_times = dict([(player_id, 0)
-                                       for player_id in range(self.player_num)])
+                                       for player_id in range(N)])
 
         if self.algo == 'GT':
             self.utilities = []
 
         if self.algo == 'RE':
             self.utilities = {0: 0}
-            N = self.player_num
             self.A_RE = np.zeros((N, N))
             for i in range(N):
                 for j in range(N):
@@ -86,7 +84,7 @@ class Aggregator():
             self.z_RE = np.array([0 for _ in range(N)]).reshape(1, -1)
 
         if self.algo == 'CP':
-            self.num_measurement = int(self.player_num/2)
+            self.num_measurement = int(N/2)
             self.y_CP = dict([(m, []) for m in range(self.num_measurement)])
             A_CP = np.random.binomial(1, 0.5, size=(self.num_measurement, N))
             self.A_CP = 1 / np.sqrt(self.num_measurement) * (2 * A_CP - 1)
@@ -103,6 +101,7 @@ class Aggregator():
             self.CP_aggregate(results, iter_times, task_total_utility)
         elif self.algo == 'RE':
             self.RE_aggregate(results, task_total_utility)
+        return self.SV, self.SV_var, self.utility_comp_times, self.time_cost
 
     def MC_aggregate(self, results):
         while not results.empty():

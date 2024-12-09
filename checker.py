@@ -14,7 +14,7 @@ class Checker():
         self.SV_cache.append(copy.deepcopy(SVs))
         return len(self.SV_cache) < self.cache_size
 
-    def convergence_check(self):
+    def convergence_check(self, SVs):
         if self.cache_SV(SVs):
             return False
 
