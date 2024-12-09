@@ -146,24 +146,26 @@ sv_calc(task='DV', dataset='iris', base_algo='MC', privacy_protection_measure='D
 ```
 
 ## Extend **_SvBench_**
-**_SvBench_**  provides APIs in its modules (marked by an API icon in the [figure](#overview)) for developers to extend this benchmark. One can configure the modules he expects to extend by his user-specific parameters at the SV computation step and submit the new functions corresponding to those modules. 
+**_SvBench_**  provides several APIs in its modules (marked by an API icon in the [figure](#overview)) for developers to extend this benchmark. One can configure the modules he expects to extend by his user-specific parameters and functions at the SV computation step. 
 The following table summarizes the modules that can be extended by configurating user-specific parameters and functions. 
 
-A typical example is that a developer expects to extend the utility calculator module with a new function to compute utility in a new data valuation task (denoted by DV_Mnist) which evaluates the importance of 60,000 training samples in the Mnist dataset for improving the handwritten digits classification accuracy. The developer can achieve such an extension by setting the parameters `task=DV_Mnist, player_num=60000, utility_function=function_to_compute_utility` and implementing the utility function of DV_Mnist task to submit the user-specific function to **_SvBench_**.
+A typical example is that a developer expects to extend the utility calculator module with a new function to compute utility in a new data valuation task (denoted by DV_Mnist) which evaluates the importance of 60,000 training samples in the Mnist dataset for improving the handwritten digits classification accuracy. The developer can achieve such an extension by implementing a valid utility function for the DV_Mnist task (with a function name, e.g., `DV_Mnist_utility_computation`) and setting `task=DV_Mnist, player_num=60000, utility_function=DV_Mnist_utility_computation`.
 
-**_SvBench_** will check the legitimacy and validity of the received parameters and functions and use the valid parameters and functions to execute the operations in the corresponding modules. Moreover, with user permissions, **_SvBench_** will embed the valid new functions into the corresponding modules to provide more development choices for future use.
+**_SvBench_** will check the legitimacy and validity of the user-specific parameters and functions and use the valid parameters and functions to execute the operations in the corresponding modules. Moreover, with user permissions, **_SvBench_** will embed the valid new functions into the corresponding modules to provide more development choices for future use.
 
 <!--To run <u>user-specific task</u>, there are the following parameters, which developers could choose to set to remake the corresponding module:-->
 
-|         Parameter          | Description                                                  |  Remade modules   |   Type   |
-| :------------------------: | :----------------------------------------------------------- | :---------------: | :------: |
-|            task            | The name of the user-specific task.                          |    calculator     |   str    |
-|         player_num         | The number of players in user-specific task.                 |    calculator     |   int    |
-|      utility_function      | The function for utility computation, which accepts a `list` parameter representing the players coalition to calculate utility and returns a value representing the utility |    calculator     | function |
-|          sampling          | The sampling function for user-specific SV computing algorithm, which result returned is the input parameter of the algorithm. |      sampler      | function |
-|         base_algo          | The function for user-specific SV computing algorithm, which accepts the sampling function result as the parameter.base_algo |    calculator     | function |
-|      result_aggregate      | The function to aggregate the results (including the resultant SVs, SVs' variance, utility calculation times and time cost) based on the result from `base_algo` function. | output aggregator | function |
-| privacy_protection_measure | The function for privacy protection for the results.         | output aggregator | function |
+|  Remade modules  |         Parameter          |  Type   |  Description      |
+| :---------------: | :------------------------: | :------: | :----------------------------------------------------------- |
+|  sampler  |    sampling    |  function | The sampling function for user-specific SV computing algorithm. The function output is a `list` recording the identifiers of players in the sampled coalition or permutation. |    
+|  calculator  |      task      |   str    | The name of the user-specific task.   |   
+|  calculator     |   player_num     |     int    |The number of players in the user-specific task.    | 
+|  calculator     |     utility_function      |  function | The function for utility computation, which takes the `list` generated from the sampling function as the input and output a utility value representing the collective efforts of the players cincluded in the input list. |  
+|  calculator     |     optimization_strategy      |  str | The user-specific strategy for optimizing efficiency of utility computation. Setting a User-specific optimization strategy is allowed only when the utility_function is set by user-specific function. |  
+|  calculator     |  base_algo | function | The function for user-specific sv computing algorithm, which takes the outputs from the sampling function as its input and generates a set of utility computation results for output aggregator. |
+|  convergence checker |   convergence_check    | function | The function to determine the termination of SV computing process, which takes several rounds of SV results as inputs and outputs a `boolean` value. | 
+|  output aggregator |   result_aggregate    | function | The function to aggregate all utility computation results (which are inputs to this function) for generating SV results, the total number of utility calculations, total time costs, etc, as the function outputs. | 
+|  output aggregator | privacy_protection_measure | function | The function for handling SV-driven privacy issues. The function input and output are both a `dictionary` with the key being the identifier of each players, the value being the SV of each player. | 
 
 ## Experiments
 Our survey paper has utilized **_SvBench_** to conduct the following four sets of experiments on the example DA tasks in order to answer the questions proposed in the paper:
