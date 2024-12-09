@@ -149,23 +149,21 @@ sv_calc(task='DV', dataset='iris', base_algo='MC', privacy_protection_measure='D
 **_SvBench_**  provides APIs in its modules (marked by an API icon in the [figure](#overview)) for developers to extend this benchmark. One can configure the modules he expects to extend by his user-specific parameters at the SV computation step and submit the new functions corresponding to those modules. 
 The following table summarizes the modules that can be extended by configurating user-specific parameters and functions. 
 
-A typical example is that a developer expects to extend the utility calculator module with a new function for computing utility in a new data valuation task (denoted by DV_Mnist) which evaluates the importance of 60,000 training samples in the Mnist dataset for improving the handwritten digits classification accuracy. The developer can achieve such an extension by setting the parameter `task=DV_Mnist, player_num=60000, utility_function=pointer_to_utility_computation_in_DV_Mnist_py` and submitting a `DV_Mnist.py` file (containing the `utility_computation` function specific to DV_Mnist task) to the `Task` folder. 
+A typical example is that a developer expects to extend the utility calculator module with a new function to compute utility in a new data valuation task (denoted by DV_Mnist) which evaluates the importance of 60,000 training samples in the Mnist dataset for improving the handwritten digits classification accuracy. The developer can achieve such an extension by setting the parameters `task=DV_Mnist, player_num=60000, utility_function=function_to_compute_utility` and implementing the utility function of DV_Mnist task to submit the user-specific function to **_SvBench_**.
 
 **_SvBench_** will check the legitimacy and validity of the received parameters and functions and use the valid parameters and functions to execute the operations in the corresponding modules. Moreover, with user permissions, **_SvBench_** will embed the valid new functions into the corresponding modules to provide more development choices for future use.
 
 <!--To run <u>user-specific task</u>, there are the following parameters, which developers could choose to set to remake the corresponding module:-->
 
-|         Parameter          |           Scope           | Description                                                  | Remade modules    | Type     |
-| :------------------------: | :-----------------------: | ------------------------------------------------------------ | ----------------- | -------- |
-|            task            |             -             | The name of the user-specific task.                          | calculator        | str      |
-|         player_num         |             -             | The number of players in user-specific task.                 | calculator        | int      |
-|      utility_function      |             -             | The function for utility computation, which accepts a `list` parameter representing the players coalition to calculate utility and returns a value representing the utility | calculator        | function |
-|         base_algo          |             -             | The function for user-specific SV computing algorithm, which accepts the sampling function result as the parameter. | calculator        | function |
-|          sampling          |             -             | The sampling function for user-specific SV computing algorithm, which result returned is the input parameter of the algorithm. | sampler           | function |
-|         full_check         | `permutation` `coalition` | The object of the convergence check.                         | output aggregator | str      |
-| privacy_protection_measure |             -             | The function for privacy protection for the results.         |                   | function |
-|                            |                           |                                                              |                   |          |
-|                            |                           |                                                              |                   |          |
+|         Parameter          | Description                                                  |  Remade modules   |   Type   |
+| :------------------------: | :----------------------------------------------------------- | :---------------: | :------: |
+|            task            | The name of the user-specific task.                          |    calculator     |   str    |
+|         player_num         | The number of players in user-specific task.                 |    calculator     |   int    |
+|      utility_function      | The function for utility computation, which accepts a `list` parameter representing the players coalition to calculate utility and returns a value representing the utility |    calculator     | function |
+|          sampling          | The sampling function for user-specific SV computing algorithm, which result returned is the input parameter of the algorithm. |      sampler      | function |
+|         base_algo          | The function for user-specific SV computing algorithm, which accepts the sampling function result as the parameter.base_algo |    calculator     | function |
+|      result_aggregate      | The function to aggregate the results (including the resultant SVs, SVs' variance, utility calculation times and time cost) based on the result from `base_algo` function. | output aggregator | function |
+| privacy_protection_measure | The function for privacy protection for the results.         | output aggregator | function |
 
 ## Experiments
 Our survey paper has utilized **_SvBench_** to conduct the following four sets of experiments on the example DA tasks in order to answer the questions proposed in the paper:
