@@ -8,13 +8,13 @@ This repository [introduces **_SvBench_**](#using), a benchmark framework for de
 
 As shown in the figure, **_SvBench_** is composed of a config loader, a sampler, a utility calculator, a convergence checker, and an output aggregator for computing SV by iterative rounds. A round of SV calculation is conducted starting from the sampler and ending at the convergence checker. Once the convergence criterion is not met, another round will be initiated as demonstrated in the figure (with dashed arrow). The following two tables summarize the functions of the five modules in **_SvBench_** and the main parameters used by SV computing algorithms. Using these modules, **_SvBench_** implements five base SV computing algorithms (**MC**, **RE**, **MLE**, **GT**, and **CP**) and several hybrid algorithms, each combining one base algorithm with the techniques for efficiency optimization, approximation error reduction, and privacy protection, etc. For more details of SV computing techniques, please refer to the [survey paper](https://arxiv.org/abs/2412.01460).
 
-|          Module          | Description                                                                                                                                                                                         | Main Implemented Techniques                                                                               |
-| :----------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **configuration loader** | Load the SV computing parameters specified by the users                                                                                                                                             | /                                                                                                         |
-|       **sampler**        | Generate the coalitions or permutations of players based on the configured sampling strategy                                                                                                        | Random Sampling, Stratified Sampling, Antithetic Sampling                                                 |
-|  **utility calculator**  | Compute the utility of the sampled coalitions or permutations. When users specify an efficiency optimization strategy, the utility calculator will use that strategy to accelerate the computation. | Truncation, ML Speedup (e.g., Gradient Approximation, Test Sample Skip) for Efficiency Optimization                                                        |
-| **convergence checker**  | Determine whether to terminate the SV computation based on the convergence criterion specified in the configuration                                                                                 | SV Ranking                                                                                                |
-|  **output aggregator**   | Generate the final SV of each player. If users specify privacy protection measures, the aggregator will execute those measures before reporting the final results.                                  | Measures (e.g., Differential Privacy, Quantization and Dimension Reduction) for Privacy Protection on SV. |
+|          Module          | Description                                                  | Main Implemented Techniques                                  |
+| :----------------------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **configuration loader** | Load the SV computing parameters specified by the users      | /                                                            |
+|       **sampler**        | Generate the coalitions or permutations of players based on the configured sampling strategy | Random Sampling, Stratified Sampling, Antithetic Sampling    |
+|  **utility calculator**  | Compute the utility of the sampled coalitions or permutations. When users specify an efficiency optimization strategy, the utility calculator will use that strategy to accelerate the computation. | Truncation, ML Speedup (e.g., Gradient Approximation, Test Sample Skip) for Efficiency Optimization |
+| **convergence checker**  | Determine whether to terminate the SV computation based on the convergence criterion specified in the configuration | SV Ranking                                                   |
+|  **output aggregator**   | Generate the final SV of each player. If users specify privacy protection measures, the aggregator will execute those measures before reporting the final results. | Measures (e.g., Differential Privacy, Quantization and Dimension Reduction) for Privacy Protection on SV. |
 
 |      Config      | Options (Default setting is in bold.)                        |
 | :--------------: | ------------------------------------------------------------ |
@@ -185,11 +185,11 @@ python exp.py --task=RI --dataset=iris --base_algo=GT
 python exp.py --task=RI --dataset=iris --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=RI --dataset=iris --base_algo=MC --optimization=TC
-python exp.py --task=RI --dataset=iris --base_algo=MLE --optimization=TC
-python exp.py --task=RI --dataset=iris --base_algo=RE --optimization=TC
-python exp.py --task=RI --dataset=iris --base_algo=GT --optimization=TC
-python exp.py --task=RI --dataset=iris --base_algo=CP --optimization=TC
+python exp.py --task=RI --dataset=iris --base_algo=MC --optimization_strategy=TC
+python exp.py --task=RI --dataset=iris --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=RI --dataset=iris --base_algo=RE --optimization_strategy=TC
+python exp.py --task=RI --dataset=iris --base_algo=GT --optimization_strategy=TC
+python exp.py --task=RI --dataset=iris --base_algo=CP --optimization_strategy=TC
 ```
 
 (2) experiments on **RI_Wine** task
@@ -202,11 +202,11 @@ python exp.py --task=RI --dataset=wine --base_algo=GT
 python exp.py --task=RI --dataset=wine --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=RI --dataset=wine --base_algo=MC --optimization=TC
-python exp.py --task=RI --dataset=wine --base_algo=MLE --optimization=TC
-python exp.py --task=RI --dataset=wine --base_algo=RE --optimization=TC
-python exp.py --task=RI --dataset=wine --base_algo=GT --optimization=TC
-python exp.py --task=RI --dataset=wine --base_algo=CP --optimization=TC
+python exp.py --task=RI --dataset=wine --base_algo=MC --optimization_strategy=TC
+python exp.py --task=RI --dataset=wine --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=RI --dataset=wine --base_algo=RE --optimization_strategy=TC
+python exp.py --task=RI --dataset=wine --base_algo=GT --optimization_strategy=TC
+python exp.py --task=RI --dataset=wine --base_algo=CP --optimization_strategy=TC
 ```
 
 (3) experiments on **DV_Iris** task
@@ -219,19 +219,19 @@ python exp.py --task=DV --dataset=iris --base_algo=GT
 python exp.py --task=DV --dataset=iris --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=TC
-python exp.py --task=DV --dataset=iris --base_algo=MLE --optimization=TC
-python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=TC
-python exp.py --task=DV --dataset=iris --base_algo=GT --optimization=TC
-python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=TC
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization_strategy=TC
+python exp.py --task=DV --dataset=iris --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization_strategy=TC
+python exp.py --task=DV --dataset=iris --base_algo=GT --optimization_strategy=TC
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization_strategy=TC
 
-python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=GA
-python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=GA
-python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=GA
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization_strategy=GA
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization_strategy=GA
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization_strategy=GA
 
-python exp.py --task=DV --dataset=iris --base_algo=MC --optimization=TC+GA
-python exp.py --task=DV --dataset=iris --base_algo=RE --optimization=TC+GA
-python exp.py --task=DV --dataset=iris --base_algo=CP --optimization=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=MC --optimization_strategy=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=RE --optimization_strategy=TC+GA
+python exp.py --task=DV --dataset=iris --base_algo=CP --optimization_strategy=TC+GA
 ```
 
 (4) experiments on **DV_Wine** task
@@ -244,19 +244,19 @@ python exp.py --task=DV --dataset=wine --base_algo=GT
 python exp.py --task=DV --dataset=wine --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=TC
-python exp.py --task=DV --dataset=wine --base_algo=MLE --optimization=TC
-python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=TC
-python exp.py --task=DV --dataset=wine --base_algo=GT --optimization=TC
-python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=TC
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization_strategy=TC
+python exp.py --task=DV --dataset=wine --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization_strategy=TC
+python exp.py --task=DV --dataset=wine --base_algo=GT --optimization_strategy=TC
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization_strategy=TC
 
-python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=GA
-python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=GA
-python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=GA
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization_strategy=GA
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization_strategy=GA
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization_strategy=GA
 
-python exp.py --task=DV --dataset=wine --base_algo=MC --optimization=TC+GA
-python exp.py --task=DV --dataset=wine --base_algo=RE --optimization=TC+GA
-python exp.py --task=DV --dataset=wine --base_algo=CP --optimization=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=MC --optimization_strategy=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=RE --optimization_strategy=TC+GA
+python exp.py --task=DV --dataset=wine --base_algo=CP --optimization_strategy=TC+GA
 ```
 (5) experiments on **FL_Mnist** task
 ```
@@ -268,35 +268,35 @@ python exp.py --task=FL --dataset=mnist --base_algo=GT
 python exp.py --task=FL --dataset=mnist --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC
-python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC
-python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC
-python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC
-python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization_strategy=TC
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization_strategy=TC
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization_strategy=TC
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization_strategy=TC
 
-python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=GA
-python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=GA
-python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=GA 
-python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=GA
-python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=GA
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization_strategy=GA
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization_strategy=GA
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization_strategy=GA 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization_strategy=GA
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization_strategy=GA
 
-python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=GA+TSS 
-python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization_strategy=GA+TSS 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization_strategy=GA+TSS
 
-python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC+GA
-python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization_strategy=TC+GA
 
-python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization=TC+GA+TSS 
-python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MC --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=MLE --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=RE --optimization_strategy=TC+GA+TSS 
+python exp.py --task=FL --dataset=mnist --base_algo=GT --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=mnist --base_algo=CP --optimization_strategy=TC+GA+TSS
 ```
 
 (6) experiments on **FL_Cifar** task
@@ -309,35 +309,35 @@ python exp.py --task=FL --dataset=cifar --base_algo=GT
 python exp.py --task=FL --dataset=cifar --base_algo=CP
 
 # hybrid algorithms
-python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC
-python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC
-python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC
-python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC
-python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization_strategy=TC
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization_strategy=TC
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization_strategy=TC
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization_strategy=TC
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization_strategy=TC
 
-python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=GA
-python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=GA
-python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=GA 
-python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=GA
-python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=GA
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization_strategy=GA
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization_strategy=GA
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization_strategy=GA 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization_strategy=GA
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization_strategy=GA
 
-python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=GA+TSS 
-python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization_strategy=GA+TSS 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization_strategy=GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization_strategy=GA+TSS
 
-python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC+GA
-python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization_strategy=TC+GA
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization_strategy=TC+GA
 
-python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization=TC+GA+TSS 
-python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization=TC+GA+TSS
-python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MC --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=MLE --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=RE --optimization_strategy=TC+GA+TSS 
+python exp.py --task=FL --dataset=cifar --base_algo=GT --optimization_strategy=TC+GA+TSS
+python exp.py --task=FL --dataset=cifar --base_algo=CP --optimization_strategy=TC+GA+TSS
 ```
 
 ### Instructions for the **second** set of experiments
