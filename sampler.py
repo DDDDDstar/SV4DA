@@ -19,6 +19,7 @@ class Sampler():
         while ",".join(map(str, permutation)) in self.permutations:
             random.shuffle(permutation)
         return permutation
+    
 
     def generateRandomSubset(self, q_k):
         k = np.random.choice(range(1, self.player_num), p=q_k, size=1)
@@ -31,8 +32,7 @@ class Sampler():
         return selected_players
 
     def MC_sample(self):
-        last = self.permutations[-1] if len(
-            self.permutations) > 0 else list(range(self.player_num))
+        last= self.permutations[-1] if len(self.permutations) > 0 else list(range(self.player_num))
         if self.sampling == 'random':
             permutation = self.generateRandomPermutation()
         elif self.sampling == 'antithetic':
@@ -83,7 +83,8 @@ class Sampler():
                 res = self.MC_sample()
                 return res[0], res[1], self.sampling_times
             elif self.algo == 'MLE':
-                return self.MLE_sample(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m')), self.sampling_times
+                res = self.MLE_sample(kwargs.get('q'), kwargs.get('I_mq'), kwargs.get('m'))
+                return res[0], res[1], self.sampling_times
             elif self.algo == 'GT':
                 res = self.GT_sample(kwargs.get('q_k'), kwargs.get('last'))
                 return res[0], res[1], self.sampling_times
