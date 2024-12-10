@@ -176,8 +176,6 @@ def MIA_addPrivacyProtection(qidx, value, ref,
                           for k in SV_out_ref[sv_idx].keys()]
 
         SV_with_protect = privacy_protect(
-            SV_args.privacy_protection_measure,
-            SV_args.privacy_protection_level,
             dict([(k, sv) for (k, (sv, var)) in SV_out_ref[sv_idx].items()]),
             dict([(k, var) for (k, (sv, var)) in SV_out_ref[sv_idx].items()]))
         SV_out[sv_idx] = SV_with_protect[len(SV_with_protect)-1]
@@ -199,8 +197,6 @@ def MIA_addPrivacyProtection(qidx, value, ref,
                           for k in SV_in_ref[sv_idx].keys()]
 
         SV_with_protect = privacy_protect(
-            SV_args.privacy_protection_measure,
-            SV_args.privacy_protection_level,
             dict([(k, sv) for (k, (sv, var)) in SV_in_ref[sv_idx].items()]),
             dict([(k, var) for (k, (sv, var)) in SV_in_ref[sv_idx].items()]))  # querySampleSVin_ref[qidx][sv_idx])
         SV_in[sv_idx] = SV_with_protect[len(SV_with_protect)-1]
@@ -221,8 +217,6 @@ def MIA_addPrivacyProtection(qidx, value, ref,
                       for k in ref.keys()]
 
     SV_with_protect = privacy_protect(
-        SV_args.privacy_protection_measure,
-        SV_args.privacy_protection_level,
         dict([(k, sv) for (k, (sv, var)) in ref.items()]),
         dict([(k, var) for (k, (sv, var)) in ref.items()]))
     value = SV_with_protect[len(SV_with_protect)-1]
@@ -516,8 +510,6 @@ def FIA_addPrivacyProtection(SV_args, testSampleFeatureSV, SV_var):
                           for k in testSampleFeatureSV[test_idx].keys()]
 
         testSampleFeatureSV[test_idx] = privacy_protect(
-            SV_args.privacy_protection_measure,
-            SV_args.privacy_protection_level,
             testSampleFeatureSV[test_idx],
             SV_var[test_idx])
         print('(aft PPM) sample %s\'s SV:' % test_idx,
