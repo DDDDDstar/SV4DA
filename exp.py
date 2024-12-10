@@ -50,6 +50,9 @@ def args_parser():
 
 if __name__ == '__main__':
     args = args_parser()
+    if args.log_file!='std':
+        file = open(args.log_file, 'w')
+        sys.stdout = file
         
     if args.task == 'FL' and 'GA' in args.optimization_strategy:
         FL = federated_learning.FL(
@@ -57,6 +60,8 @@ if __name__ == '__main__':
             manual_seed=args.manual_seed,
             GA='GA' in args.optimization_strategy,
             TSS='TSS' in args.optimization_strategy)
+        sys.stdout.flush()
+        
         round_SV = dict()
         round_SV_var = dict()
         for ridx in range(FL.max_round):
@@ -90,6 +95,8 @@ if __name__ == '__main__':
         RI = result_interpretation.RI(
             dataset=args.dataset,
             manual_seed=args.manual_seed)
+        sys.stdout.flush()
+        
         RI.testSampleFeatureSV = dict()
         RI.testSampleFeatureSV_var = dict()
         # compute SV for only selected test samples for saving time cost
