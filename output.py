@@ -81,14 +81,12 @@ class Aggregator():
                 for j in range(self.player_num):
                     if i == j:
                         self.A_RE[i, j] = sum([1/self.player_num/(self.player_num-k) for k in range(1, self.player_num)]) / \
-                            sum([1/k/(self.player_num-k)
-                                for k in range(1, self.player_num)])
+                            sum([1/k/(self.player_num-k) for k in range(1, self.player_num)])
                     else:
                         self.A_RE[i, j] = 1/self.player_num/(self.player_num-1) *\
                             sum([(k-1)/(self.player_num-k) for k in range(2, self.player_num)]) / \
-                            sum([1/k/(self.player_num-k)
-                                for k in range(1, self.player_num)])
-
+                            sum([1/k/(self.player_num-k) for k in range(1, self.player_num)])
+            
         if self.algo == 'CP':
             self.num_measurement = int(self.player_num/2)
             self.y_CP = dict([(m, []) for m in range(self.num_measurement)])
@@ -121,6 +119,12 @@ class Aggregator():
                 = ((self.SV_comp_times[player_id]-1)*old_SV + delta_utility)/self.SV_comp_times[player_id]
             self.utility_comp_times += utility_comp_times
             self.time_cost += time_cost
+            # the results printed here are necessary for the final set of experiments
+            # for generating the figure of overall utility variance caused by
+            # adding or removing players
+            print(('[%s] Player %s: delta_utility: %s, SV_bef: %s, SV_aft: %s.') % (
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                player_id, delta_utility, old_SV, self.SV[player_id]))
 
         # update SV_var
         for player_id in range(self.player_num):
@@ -155,7 +159,7 @@ class Aggregator():
             for j in range(i + 1, self.player_num):
                 delta_utility[i, j] \
                     = Z/len(self.utilities) * sum(
-                        [utility * (beta[i] - beta[j])
+                        [utility * (beta[i] - beta[j])\
                          for (beta, utility) in self.utilities])
                 delta_utility[j, i] = - delta_utility[i, j]
 
@@ -199,7 +203,7 @@ class Aggregator():
         for m in range(len(self.y_CP)):
             y_mean[m] = 1/iter_times * sum(self.y_CP[m][:iter_times])
         sv_mean = task_total_utility/self.player_num
-        def fun(sv_variance): return np.linalg.norm(sv_variance, ord=1)
+        fun = lambda sv_variance : np.linalg.norm(sv_variance, ord=1) 
         cons = (
             {'type': 'ineq', 'fun':
                 lambda sv_variance:
@@ -219,10 +223,10 @@ class Aggregator():
     def RE_aggregate(self, results, task_total_utility, task_emptySet_utility):
         while not results.empty():
             boolean_z, value, utility_comp_times, timeCost = results.get()
-            if True in np.all(self.z_RE == boolean_z, axis=1):
-                # the results has been recorded into self.z_RE and self.utilities
+            if True in np.all(self.z_RE==boolean_z,axis=1):
+                # the results has been recorded into self.z_RE and self.utilities 
                 continue
-            # self.utilities[len(self.z_RE)+order] = value
+            #self.utilities[len(self.z_RE)+order] = value
             self.utilities[len(self.z_RE)] = value
             self.z_RE = np.concatenate((self.z_RE, np.array([boolean_z])))
             self.utility_comp_times += utility_comp_times
@@ -238,10 +242,10 @@ class Aggregator():
                   E_Z * task_emptySet_utility) / len(self.z_RE)
         inv_A = np.linalg.inv(self.A_RE)
         ones = np.ones((self.player_num, 1))
-        beta = np.linalg.inv(self.A_RE).dot(b-ones * (
-            (ones.T.dot(inv_A).dot(b) - task_total_utility + task_emptySet_utility) /
-            ones.T.dot(inv_A).dot(ones)
-        )).reshape(-1)
+        beta = np.linalg.inv(self.A_RE).dot( b-ones* (
+            (ones.T.dot(inv_A).dot(b)- task_total_utility + task_emptySet_utility)/\
+                ones.T.dot(inv_A).dot(ones)
+                )).reshape(-1)
 
         # update SV
         self.SV = dict([(player_id, beta[player_id])
