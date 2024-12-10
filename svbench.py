@@ -69,7 +69,7 @@ class SVBench():
             DV = data_valuation.DV(
                 dataset=self.dataset,
                 manual_seed=self.manual_seed,
-                GA=self.GA, TSS=self.TSS)
+                GA=self.GA)
             return DV.utility_computation
         elif self.task == 'FL':
             FL = federated_learning.FL(
@@ -80,14 +80,13 @@ class SVBench():
         elif self.task == 'RI':
             RI = result_interpretation.RI(
                 dataset=self.dataset,
-                manual_seed=self.manual_seed,
-                GA=self.GA, TSS=self.TSS)
+                manual_seed=self.manual_seed)
             return RI.utility_computation
         elif self.task == 'DSV':
             DSV = dataset_valuation.DSV(
                 dataset=self.dataset,
                 manual_seed=self.manual_seed,
-                GA=self.GA, TSS=self.TSS)
+                GA=self.GA)
             return DSV.utility_computation
         else:
             return utility_function_api
