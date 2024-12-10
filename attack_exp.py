@@ -248,17 +248,31 @@ def SV_compute(DV_task, sampleIdx, datasetIdx, SV_args):
     sys.stdout.flush()
 
     # using SVBench to compute SV
-    SV_args.task = 'MIA-DV'
-    SV_args.utility_function_api = DV_task.utility_computation
-    SV_args.player_num = len(DV_task.players.idxs)
-    SV, SV_var = sv_calc(SV_args)  # DV-attack task
+    SV, SV_var = sv_calc(
+        task = f'DV_{SV_args.dataset}',
+        dataset = SV_args.dataset,
+        player_num  =  len(DV_task.players.idxs),
+        utility_function  =  DV_task.utility_computation,
+        base_algo = SV_args.base_algo,
+        conv_check_num = SV_args.conv_check_num,
+        convergence_threshold = SV_args.convergence_threshold,
+        sampling_strategy = SV_args.sampling_strategy,
+        optimization_strategy = SV_args.optimization_strategy,
+        TC_threshold = SV_args.TC_threshold,
+        privacy_protection_measure = SV_args.privacy_protection_measure,
+        privacy_protection_level = SV_args.privacy_protection_level,
+        log_file = SV_args.log_file,
+        num_parallel_threads = SV_args.num_parallel_threads,
+        manual_seed = SV_args.manual_seed
+        )  # RI-attack task
+
 
     return SV[targetedPlayer_idx], \
         dict([(pidx, (SV[pidx], np.var(SV_var[pidx])))
               for pidx in SV.keys()])
 
 
-def sampleDataset(data, labels, num_samples_each_class, query_label=list()):
+def sampleDataset(data, labels, num_samples_each_class, query_label = list()):
     selected_sample_index = []
     for label in np.unique(labels):
         selected_sample_index += np.random.choice(
@@ -549,18 +563,30 @@ def FIA(SV_args):
         # compute SV for only selected test samples for saving time cost
         for test_idx in RI.selected_test_samples:
             RI.Tst.idxs = RI.complete_Tst_idx[test_idx:test_idx+1]
-            print('\n test sample data: ', RI.Tst.dataset[test_idx],
-                  '\n test sample label: ', RI.Tst.labels[test_idx])
-
-            SV_args.task = 'FIA-RI'
-            SV_args.utility_function_api = RI.utility_computation
-            SV_args.player_num = len(RI.players)
-            SV, SV_var = sv_calc(SV_args)  # RI-attack task
+            SV, SV_var = sv_calc(
+                task = f'RI_{SV_args.dataset}_Idx{test_idx}',
+                dataset = SV_args.dataset,
+                player_num = len(RI.players),
+                utility_function  =  RI.utility_computation,
+                base_algo = SV_args.base_algo,
+                conv_check_num = SV_args.conv_check_num,
+                convergence_threshold = SV_args.convergence_threshold,
+                sampling_strategy = SV_args.sampling_strategy,
+                optimization_strategy = SV_args.optimization_strategy,
+                TC_threshold = SV_args.TC_threshold,
+                privacy_protection_measure = SV_args.privacy_protection_measure,
+                privacy_protection_level = SV_args.privacy_protection_level,
+                log_file = SV_args.log_file,
+                num_parallel_threads = SV_args.num_parallel_threads,
+                manual_seed = SV_args.manual_seed
+                )  # RI-attack task
 
             RI.testSampleFeatureSV[test_idx] = SV
             RI.testSampleFeatureSV_var[test_idx] = dict([
                 (fidx, np.var(SV_var[fidx]))
                 for fidx in SV_var.keys()])
+            print('\n test sample data: ', RI.Tst.dataset[test_idx],
+                  '\n test sample label: ', RI.Tst.labels[test_idx])
             print('SV of test sample %s/%s: ' % (test_idx, len(RI.complete_Tst_idx)),
                   RI.testSampleFeatureSV[test_idx], '\n')
         RI.Tst.idx = RI.complete_Tst_idx
@@ -670,18 +696,30 @@ def FIA_noAttackModelTrain(SV_args, random_mode='auxilliary'):
         # compute SV for only selected test samples for saving time cost
         for test_idx in RI.selected_test_samples:
             RI.Tst.idxs = RI.complete_Tst_idx[test_idx:test_idx+1]
-            print('\n test sample data: ', RI.Tst.dataset[test_idx],
-                  '\n test sample label: ', RI.Tst.labels[test_idx])
-
-            SV_args.task = 'FIA-RI'
-            SV_args.utility_function_api = RI.utility_computation
-            SV_args.player_num = len(RI.players)
-            SV, SV_var = sv_calc(SV_args)  # RI-attack task
+            SV, SV_var = sv_calc(
+                task = f'RI_{SV_args.dataset}_Idx{test_idx}',
+                dataset = SV_args.dataset,
+                player_num = len(RI.players),
+                utility_function = RI.utility_computation,
+                base_algo = SV_args.base_algo,
+                conv_check_num = SV_args.conv_check_num,
+                convergence_threshold = SV_args.convergence_threshold,
+                sampling_strategy = SV_args.sampling_strategy,
+                optimization_strategy = SV_args.optimization_strategy,
+                TC_threshold = SV_args.TC_threshold,
+                privacy_protection_measure = SV_args.privacy_protection_measure,
+                privacy_protection_level = SV_args.privacy_protection_level,
+                log_file = SV_args.log_file,
+                num_parallel_threads = SV_args.num_parallel_threads,
+                manual_seed = SV_args.manual_seed
+                )  # RI-attack task
 
             RI.testSampleFeatureSV[test_idx] = SV
             RI.testSampleFeatureSV_var[test_idx] = dict([
                 (fidx, np.var(SV_var[fidx]))
                 for fidx in SV_var.keys()])
+            print('\n test sample data: ', RI.Tst.dataset[test_idx],
+                  '\n test sample label: ', RI.Tst.labels[test_idx])
             print('SV of test sample %s/%s: ' % (test_idx, len(RI.complete_Tst_idx)),
                   RI.testSampleFeatureSV[test_idx], '\n')
         RI.Tst.idx = RI.complete_Tst_idx
