@@ -2,7 +2,6 @@ import numpy as np
 import queue
 import os
 import copy
-import threading
 import torch
 
 from functools import reduce
@@ -17,7 +16,7 @@ class RI():
         self.dataset = dataset
         self.manual_seed = manual_seed
         self.dataset_info = {
-            'iris': (3, 4, 0.01, 100, 16),
+            'iris': (3, 4, 0.01, 50, 16),
             'wine': (3, 13, 0.001, 100, 16)
         }
         self.num_classes, self.num_feature, self.lr, self.ep, self.bs = self.dataset_info[
@@ -91,6 +90,7 @@ class RI():
         # select test samples
         self.num_samples_each_class = 1  # select only one sample in each class
         self.selected_test_samples = []
+        '''
         if len(self.players) > 5 and \
             False not in [len(
                 np.where(self.complete_y_test == label)[0]
@@ -100,7 +100,8 @@ class RI():
                 self.selected_test_samples += np.where(
                     self.complete_y_test == label)[0][:self.num_samples_each_class].tolist()
         else:
-            self.selected_test_samples = range(len(self.complete_X_test))
+        '''
+        self.selected_test_samples = range(len(self.complete_X_test))
         # print('selected_test_samples: ', self.selected_test_samples)
 
     def train_model(self):
