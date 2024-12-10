@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from collections import namedtuple
 
 OUT_PRINT_FLUSH_INTERVAL = 5
@@ -8,10 +8,6 @@ BENCHMARK = {
         'iris': (120),
         'wine': (142),
     },
-    'DSV': {
-        'iris': (10),
-        'wine': (10),
-    },
     'FL': {
         'cifar': (10),
         'mnist': (10),
@@ -19,6 +15,10 @@ BENCHMARK = {
     'RI': {
         'iris': (4),
         'wine': (13),
+    },
+    'DSV': {
+        'iris': (10),
+        'wine': (10),
     }
 }
 
@@ -36,7 +36,7 @@ def para_set(args):
              'conv_check_num': 5,
              'base_algo': 'MC',
              'sampling_strategy': 'random',
-             'convergence_threshold': 0.1,
+             'convergence_threshold': 0.05,
              'num_parallel_threads': 1,
              'manual_seed': 42,
              'privacy_protection_measure': None,
@@ -66,8 +66,13 @@ def para_set(args):
 
 def open_log_file(log_file):
     if log_file != 'std':
+        if not os.path.exists(log_file):
+            if not sys.platform.startswith("win"):
+                os.mknod(log_file)
+            else:
+                os.system(f'type NUL > {log_file}')#for windows
         try:
-            file = open(log_file, 'w')
+            file = open(log_file, 'a')
             sys.stdout = file
         except Exception as e:
             print(f"ERROR: Open log file error:\n{e}")
@@ -78,11 +83,9 @@ def open_log_file(log_file):
 def config(args):
     if para_set(args) == -1:
         exit(-1)
-    print(f'Experiment arguments:\n{args}')
     # ARGS = namedtuple('ARGS', args.keys())
     # args = ARGS(**args)
-
     if open_log_file(args.get('log_file')) == -1:
         exit(-1)
-
+    print(f'Experiment arguments:\n{args}\n')
     return args
