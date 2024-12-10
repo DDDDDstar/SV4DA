@@ -210,7 +210,7 @@ class Shapley():
         MLE_M = 2
         MLE_interval = int(self.player_num/MLE_M)
         iter_num = MLE_interval + 1
-        if self.sampler.sampling_strategy == 'antithetic':
+        if self.sampler.sampling == 'antithetic':
             iter_num = int(MLE_interval/2) + 1
             MLE_M *= 2
         print(
