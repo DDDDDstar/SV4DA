@@ -307,11 +307,12 @@ def MIA(maxIter, num_querySample, SV_args):
     DV = data_valuation.DV(
         dataset=SV_args.dataset,
         manual_seed=SV_args.manual_seed,
-        GA=SV_args.GA)
-
+        GA='GA' in SV_args.optimization_strategy)
+    num_classes = len(np.unique([item[1] for item in DV.trn_data]))
+    
     dataIdx = list(DV.players.idxs)
     inMemberDataset_Size = SV_args.num_samples_each_class * \
-        SV_args.num_classes  # 3*SV_args.num_classes
+        num_classes  # 3*num_classes
     if len(inMemberDataset) <= 0:
         QueryDataset = np.random.choice(
             dataIdx, num_querySample, replace=False).tolist()
@@ -321,7 +322,7 @@ def MIA(maxIter, num_querySample, SV_args):
         if len(inMemberDataset) < inMemberDataset_Size:
             inMemberDataset += sampleDataset(
                 shadowDataset, DV.trn_data.labels[shadowDataset],
-                int(inMemberDataset_Size / SV_args.num_classes),
+                int(inMemberDataset_Size / num_classes),
                 query_label=[DV.trn_data.labels[z] for z in inMemberDataset]
             )
         print('shadowDataset: ', shadowDataset)
@@ -335,8 +336,7 @@ def MIA(maxIter, num_querySample, SV_args):
     queryResults = []
     queryLabels = []
     sortChange = []
-    numSamples_in_Shadow = (inMemberDataset_Size/SV_args.num_classes-1) *\
-        SV_args.num_classes
+    numSamples_in_Shadow = (inMemberDataset_Size/num_classes-1) *num_classes
 
     for qidx, z in enumerate(QueryDataset):
 
@@ -349,7 +349,7 @@ def MIA(maxIter, num_querySample, SV_args):
         ]
         sampledShadowDataset = sampleDataset(
             shadowDataset, DV.trn_data.labels[shadowDataset],
-            int(numSamples_in_Shadow/SV_args.num_classes),
+            int(numSamples_in_Shadow/num_classes),
             query_label=[DV.trn_data.labels[z]]
         )
         exclude_list = (querySampleExcludeList[qidx]
@@ -363,7 +363,7 @@ def MIA(maxIter, num_querySample, SV_args):
             while ",".join(map(str, sorted(sampledShadowDataset))) in exclude_list:
                 sampledShadowDataset = sampleDataset(
                     shadowDataset, DV.trn_data.labels[shadowDataset],
-                    int(numSamples_in_Shadow/SV_args.num_classes),
+                    int(numSamples_in_Shadow/num_classes),
                     query_label=[DV.trn_data.labels[z]]
                 )
                 if time.time()-sampleTime > 3*60:
@@ -735,7 +735,7 @@ def FIA_noAttackModelTrain(SV_args, random_mode='auxilliary'):
                      for test_idx in validation_index]
 
     # start inference
-    m_c = int(len(auxiliary_SV)/SV_args.num_classes)
+    m_c = int(len(auxiliary_SV)/len(np.unique(RI.Tst.labels)))
     r = np.array(auxiliary_SV).max()-np.array(auxiliary_SV).min()
     gagy = r/100
     tau = 0.4
