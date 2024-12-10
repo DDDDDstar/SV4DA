@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-
+import sys
 from svbench import sv_calc
 from Tasks import federated_learning, result_interpretation
 
@@ -50,6 +50,7 @@ def args_parser():
 
 if __name__ == '__main__':
     args = args_parser()
+        
     if args.task == 'FL' and 'GA' in args.optimization_strategy:
         FL = federated_learning.FL(
             dataset=args.dataset,
@@ -60,27 +61,28 @@ if __name__ == '__main__':
         round_SV_var = dict()
         for ridx in range(FL.max_round):
             FL.ridx = ridx
-            args.task = f'FL_{args.dataset}_R{ridx}'
-            args.utility_function_api = FL.utility_computation
-            args.player_num = len(FL.players)
             SV, SV_var = sv_calc(
-                task=args.task,
-                dataset=args.dataset,
-                base_algo=args.base_algo,
-                conv_check_num=args.conv_check_num,
-                convergence_threshold=args.convergence_threshold,
-                sampling_strategy=args.sampling_strategy,
-                optimization_strategy=args.optimization_strategy,
-                TC_threshold=args.TC_threshold,
-                privacy_protection_measure=args.privacy_protection_measure,
-                privacy_protection_level=args.privacy_protection_level,
-                log_file=args.log_file,
-                num_parallel_threads=args.num_parallel_threads,
-                manual_seed=args.manual_seed
+                task = f'FL_{args.dataset}_R{ridx}',
+                dataset = args.dataset,
+                player_num = len(FL.players),
+                utility_function = FL.utility_computation,
+                base_algo = args.base_algo,
+                conv_check_num = args.conv_check_num,
+                convergence_threshold = args.convergence_threshold,
+                sampling_strategy = args.sampling_strategy,
+                optimization_strategy = args.optimization_strategy,
+                TC_threshold = args.TC_threshold,
+                privacy_protection_measure = args.privacy_protection_measure,
+                privacy_protection_level = args.privacy_protection_level,
+                log_file = args.log_file,
+                num_parallel_threads = args.num_parallel_threads,
+                manual_seed = args.manual_seed
             )
             round_SV[ridx] = SV
             round_SV_var[ridx] = SV_var
             print(args.task, 'SV results:', SV)
+            sys.stdout.flush()
+            
         print('average final results:',
               np.mean(np.array([[value for value in sv.values()]
                                 for sv in round_SV.values()]), 0))
@@ -93,49 +95,50 @@ if __name__ == '__main__':
         # compute SV for only selected test samples for saving time cost
         for test_idx in RI.selected_test_samples:
             RI.Tst.idxs = RI.complete_Tst_idx[test_idx:test_idx+1]
-            print('\n test sample data: ', RI.Tst.dataset[test_idx],
-                  '\n test sample label: ', RI.Tst.labels[test_idx])
-
-            args.task = args.task + f'_Idx{test_idx}'
-            args.utility_function_api = RI.utility_computation
-            args.player_num = len(RI.players)
             SV, SV_var = sv_calc(
-                task=args.task,
-                dataset=args.dataset,
-                base_algo=args.base_algo,
-                conv_check_num=args.conv_check_num,
-                convergence_threshold=args.convergence_threshold,
-                sampling_strategy=args.sampling_strategy,
-                optimization_strategy=args.optimization_strategy,
-                TC_threshold=args.TC_threshold,
-                privacy_protection_measure=args.privacy_protection_measure,
-                privacy_protection_level=args.privacy_protection_level,
-                log_file=args.log_file,
-                num_parallel_threads=args.num_parallel_threads,
-                manual_seed=args.manual_seed
+                task = f'RI_{args.dataset}_Idx{test_idx}',
+                dataset = args.dataset,
+                player_num = len(RI.players),
+                utility_function = RI.utility_computation,
+                base_algo = args.base_algo,
+                conv_check_num = args.conv_check_num,
+                convergence_threshold = args.convergence_threshold,
+                sampling_strategy = args.sampling_strategy,
+                optimization_strategy = args.optimization_strategy,
+                TC_threshold = args.TC_threshold,
+                privacy_protection_measure = args.privacy_protection_measure,
+                privacy_protection_level = args.privacy_protection_level,
+                log_file = args.log_file,
+                num_parallel_threads = args.num_parallel_threads,
+                manual_seed = args.manual_seed
             )
 
             RI.testSampleFeatureSV[test_idx] = SV
             RI.testSampleFeatureSV_var[test_idx] = dict([
                 (fidx, np.var(SV_var[fidx]))
                 for fidx in SV_var.keys()])
-            print('SV of test sample %s/%s: ' % (test_idx, len(RI.complete_Tst_idx)),
+            print(f'\n {test_idx} test sample data: ', RI.Tst.dataset[test_idx],
+                  f'\n {test_idx} test sample label: ', RI.Tst.labels[test_idx])
+            print('SV of test sample %s/%s: ' % (test_idx, len(RI.selected_test_samples)),
                   RI.testSampleFeatureSV[test_idx], '\n')
+            sys.stdout.flush()
+            
         RI.Tst.idx = RI.complete_Tst_idx
         print('average final results:',
               np.mean(np.array([[value for value in sv.values()]
                                 for sv in RI.testSampleFeatureSV.values()]), 0))
     else:
-        sv_calc(task=args.task,
-                dataset=args.dataset,
-                base_algo=args.base_algo,
-                conv_check_num=args.conv_check_num,
-                convergence_threshold=args.convergence_threshold,
-                sampling_strategy=args.sampling_strategy,
-                optimization_strategy=args.optimization_strategy,
-                TC_threshold=args.TC_threshold,
-                privacy_protection_measure=args.privacy_protection_measure,
-                privacy_protection_level=args.privacy_protection_level,
-                log_file=args.log_file,
+        sv_calc(task = args.task,
+                dataset = args.dataset,
+                base_algo = args.base_algo,
+                conv_check_num = args.conv_check_num,
+                convergence_threshold = args.convergence_threshold,
+                sampling_strategy = args.sampling_strategy,
+                optimization_strategy = args.optimization_strategy,
+                TC_threshold = args.TC_threshold,
+                privacy_protection_measure = args.privacy_protection_measure,
+                privacy_protection_level = args.privacy_protection_level,
+                log_file = args.log_file,
                 num_parallel_threads=args.num_parallel_threads,
-                manual_seed=args.manual_seed)
+                manual_seed = args.manual_seed)
+        
