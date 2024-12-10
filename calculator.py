@@ -280,7 +280,7 @@ class Shapley():
         selected_players = []
         for _ in range(self.player_num):
             selected_players, full_sample, iter_times = self.sampler.sample(
-                q_k, selected_players)
+                q_k = q_k, last = selected_players)
             if full_sample:
                 # use break here since
                 # we need to process the case with len(selected_coalitions)>0
@@ -317,7 +317,7 @@ class Shapley():
         if self.parallel_threads_num == 1:
             for order, player_id in enumerate(permutation):
                 self.MC_CP_parallelable_thread(
-                    order, permutation, iter_times, phi_t)
+                    order, permutation, phi_t)
         else:
             for odd_even in [0, 1]:
                 for order, player_id in enumerate(permutation):
@@ -325,7 +325,7 @@ class Shapley():
                         continue
                     thread = threading.Thread(
                         target=self.MC_CP_parallelable_thread,
-                        args=(order, permutation, iter_times, phi_t)
+                        args=(order, permutation, phi_t)
                     )
                     self.threads_controller('add', thread)
                 self.threads_controller('finish')
