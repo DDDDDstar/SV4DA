@@ -43,9 +43,9 @@ class DSV():
 
     def utility_computation(self, player_list):
         all_data_tuple_idx = []
-        for pidx in player_idxs:
+        for pidx in player_list:
             all_data_tuple_idx += self.players[pidx]
-        player_idxs = all_data_tuple_idx
+        player_list = all_data_tuple_idx
 
         utility = 0.0
         # model initialize and training
