@@ -135,8 +135,9 @@ class Aggregator():
         e = np.zeros(self.player_num)
         while not results.empty():
             (player_id, delta_utility, utility_comp_times, time_cost) = results.get()
-            e[player_id] += delta_utility
-            num_comp[player_id] += 1
+            if player_id!=-1: 
+                e[player_id] += delta_utility
+                num_comp[player_id] += 1
             self.utility_comp_times += utility_comp_times
             self.time_cost += time_cost
 
