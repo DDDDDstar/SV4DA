@@ -189,19 +189,10 @@ class Shapley():
         return results, False, iter_times
 
     def MLE_parallelable_thread(self,
+                                bef_addition,
                                 player_id,
-                                I_mq,
+                                subset,
                                 results):
-        subset = [player_id_
-                  for player_id_ in range(self.player_num)
-                  if I_mq[player_id_] == 1]
-        # utility before adding the targeted player
-        bef_addition, time_cost = self.utility_computation_call(subset)
-        comp_times = 1
-
-        if player_id in subset:
-            results.put((player_id, 0, 0, 0))
-            return
         if self.if_truncation(bef_addition):
             aft_addition = bef_addition
             self.truncation_coaliations.add(
@@ -210,10 +201,8 @@ class Shapley():
             # utility after adding the targeted player
             aft_addition, time_cost1 = self.utility_computation_call(
                 list(subset)+[player_id])
-            comp_times += 1
-            time_cost += time_cost1
         results.put((player_id, aft_addition - bef_addition, 
-                     comp_times, time_cost))
+                     1, time_cost1))
         
     # refer to paper:
     # A Multilinear Sampling Algorithm to Estimate Shapley Values
@@ -234,18 +223,33 @@ class Shapley():
                     q=iter_ / MLE_interval, I_mq=I_mq, m=m)
                 if full_sample:
                     return results, True, iter_times
-
+                
+                subset = [player_id_
+                          for player_id_ in range(self.player_num)
+                          if I_mq[player_id_] == 1]
+                # utility before adding the targeted player
+                # put this computation outside the following "for" loop 
+                # for saving unncessary repeated computations
+                bef_addition, time_cost = self.utility_computation_call(subset)
+                results.put((-1, -1, 1, time_cost))
+                
                 if self.parallel_threads_num == 1:
                     for player_id in range(self.player_num):
+                        if player_id in subset:
+                            results.put((player_id, 0, 0, 0))
+                            continue
                         self.MLE_parallelable_thread(
-                            player_id, I_mq, results)
+                            bef_addition, player_id, subset, results)
                 else:
                     # speed up by multiple threads
                     for player_id in range(self.player_num):
+                        if player_id in subset:
+                            results.put((player_id, 0, 0, 0))
+                            continue
                         # compute under the other q values
                         thread = threading.Thread(
                             target=self.MLE_parallelable_thread,
-                            args=(player_id, I_mq, results))
+                            args=(bef_addition, player_id, subset, results))
                         self.threads_controller('add', thread)
                     self.threads_controller('finish')
 
@@ -284,8 +288,9 @@ class Shapley():
             selected_coalitions.append(selected_players)
         
         if full_sample and len(selected_coalitions) ==0:
-            # do not proceed to the following operations only when
-            # full_sample=True and len(selected_coalitions) ==0 happens simultaneously
+            # only when full_sample=True and len(selected_coalitions) ==0 
+            # are satisfied simultaneously
+            # we do not proceed to the following operations 
             return results, True, iter_times
         
         if self.parallel_threads_num == 1:
@@ -310,17 +315,17 @@ class Shapley():
         print('\n Compressive permutation sampling iteration %s: ' %
               iter_times, permutation)
         if self.parallel_threads_num == 1:
-            for idx, player_id in enumerate(permutation):
+            for order, player_id in enumerate(permutation):
                 self.MC_CP_parallelable_thread(
-                    idx, permutation, iter_times, phi_t)
+                    order, permutation, iter_times, phi_t)
         else:
             for odd_even in [0, 1]:
-                for idx, player_id in enumerate(permutation):
-                    if idx % 2 != odd_even:
+                for order, player_id in enumerate(permutation):
+                    if order % 2 != odd_even:
                         continue
                     thread = threading.Thread(
                         target=self.MC_CP_parallelable_thread,
-                        args=(idx, permutation, iter_times, phi_t)
+                        args=(order, permutation, iter_times, phi_t)
                     )
                     self.threads_controller('add', thread)
                 self.threads_controller('finish')
