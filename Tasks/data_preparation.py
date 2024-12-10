@@ -127,7 +127,21 @@ def get_datasets(dataset):
             x, y, test_size=0.2)
 
         x_train = torch.FloatTensor(x_train)
+        shape =  x_train.shape
+        x_train = x_train.reshape((shape[0],-1))
+        min_vals, _ = torch.min(x_train, dim=0, keepdim=True)
+        max_vals, _ = torch.max(x_train, dim=0, keepdim=True)
+        x_train = (x_train - min_vals) / (max_vals - min_vals)
+        x_train = x_train.reshape(shape)
+        
         x_test = torch.FloatTensor(x_test)
+        shape =  x_test.shape
+        x_test = x_test.reshape((shape[0],-1))
+        min_vals, _ = torch.min(x_test, dim=0, keepdim=True)
+        max_vals, _ = torch.max(x_test, dim=0, keepdim=True)
+        x_test = (x_test - min_vals) / (max_vals - min_vals)
+        x_test = x_test.reshape(shape)
+        
         y_train = torch.LongTensor(y_train)
         y_test = torch.LongTensor(y_test)
 
@@ -149,7 +163,21 @@ def get_datasets(dataset):
             x, y, test_size=0.2)
 
         x_train = torch.FloatTensor(x_train)
+        shape =  x_train.shape
+        x_train = x_train.reshape((shape[0],-1))
+        min_vals, _ = torch.min(x_train, dim=0, keepdim=True)
+        max_vals, _ = torch.max(x_train, dim=0, keepdim=True)
+        x_train = (x_train - min_vals) / (max_vals - min_vals)
+        x_train = x_train.reshape(shape)
+        
         x_test = torch.FloatTensor(x_test)
+        shape =  x_test.shape
+        x_test = x_test.reshape((shape[0],-1))
+        min_vals, _ = torch.min(x_test, dim=0, keepdim=True)
+        max_vals, _ = torch.max(x_test, dim=0, keepdim=True)
+        x_test = (x_test - min_vals) / (max_vals - min_vals)
+        x_test = x_test.reshape(shape)
+        
         y_train = torch.LongTensor(y_train)
         y_test = torch.LongTensor(y_test)
 
