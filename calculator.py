@@ -1,12 +1,9 @@
-import math
 import time
-import datetime
 import threading
 import queue
-import pulp
 import warnings
 import portalocker
-import os
+import os, sys
 import numpy as np
 
 from config import UTILITY_RECORD_FILEWRITE_INTERVAL
@@ -96,10 +93,13 @@ class Shapley():
         return utility, time_cost
 
     def read_history_utility_record(self):
-        self.utility_record_file    \
-            = f'./Tasks/utility_records/{self.task}_{self.dataset}_{self.manual_seed}{"_GA" if self.GA else ""}{"_TSS" if self.TSS else ""}.log' \
+        self.utility_record_file = './Tasks/utility_records/'+\
+            f'{self.task}_{self.dataset}_{self.manual_seed}{"_GA" if self.GA else ""}{"_TSS" if self.TSS else ""}.json' \
             if self.utility_record_file == '' else self.utility_record_file
-
+        
+        if not os.path.exists("/".join( self.utility_record_file.split('/')[:-1])):
+            os.mkdir("/".join( self.utility_record_file.split('/')[:-1]))
+            
         if os.path.exists(self.utility_record_file):
             with portalocker.Lock(self.utility_record_file, 'r', encoding='utf-8', flags=portalocker.LOCK_SH) as file:
                 utility_records = eval(file.read().strip())
@@ -120,7 +120,10 @@ class Shapley():
                 and self.utility_record_filewrite_lock.acquire(blocking=False):
             create = False
             if not os.path.exists(self.utility_record_file):
-                os.mknod(self.utility_record_file)
+                if not sys.platform.startswith("win"):
+                    os.mknod(self.utility_record_file)
+                else:
+                    os.system(f'type NUL > {self.utility_record_file}')#for windows
                 create = True
             with portalocker.Lock(self.utility_record_file, mode="r+", timeout=0) as file:
                 with self.utility_record_write_lock:
@@ -156,7 +159,7 @@ class Shapley():
                 permutation[:order+1])
             time_cost += time_cost1
             comp_times += 1
-        results.put((player_id, aft_addition - bef_addition,
+        results.put((player_id, aft_addition -bef_addition, 
                      comp_times, time_cost))
 
     def MC(self, **kwargs):
@@ -209,9 +212,9 @@ class Shapley():
                 list(subset)+[player_id])
             comp_times += 1
             time_cost += time_cost1
-        results.put((player_id, aft_addition - bef_addition,
+        results.put((player_id, aft_addition - bef_addition, 
                      comp_times, time_cost))
-
+        
     # refer to paper:
     # A Multilinear Sampling Algorithm to Estimate Shapley Values
     def MLE(self, **kwargs):
@@ -251,22 +254,22 @@ class Shapley():
     def GT_RE_parallelable_thread(self, selected_players, results):
         u, t = self.utility_computation_call(selected_players[:-1])
         if self.if_truncation(u):
-            results.put(([int(player_id in selected_players)
-                          for player_id in range(self.player_num)],
+            results.put(([int(player_id in selected_players)\
+                          for player_id in range(self.player_num)], 
                          u, 1, t))
             self.truncation_coaliations.add(
                 ",".join(map(str, sorted(selected_players))))
             return
         u, t = self.utility_computation_call(selected_players)
-        results.put(([int(player_id in selected_players)
-                      for player_id in range(self.player_num)],
+        results.put(([int(player_id in selected_players)\
+                      for player_id in range(self.player_num)], 
                      u, 1, t))
 
     def GT(self, **kwargs):
         Z = 2 * sum([1/k for k in range(1, self.player_num)])
         q_k = [1/Z*(1/k+1/(self.player_num-k))
                for k in range(1, self.player_num)]
-
+        
         results = queue.Queue()
         # sampling coalitions
         selected_coalitions = []
@@ -279,12 +282,12 @@ class Shapley():
                 # we need to process the case with len(selected_coalitions)>0
                 break
             selected_coalitions.append(selected_players)
-
-        if full_sample and len(selected_coalitions) == 0:
+        
+        if full_sample and len(selected_coalitions) ==0:
             # do not proceed to the following operations only when
             # full_sample=True and len(selected_coalitions) ==0 happens simultaneously
             return results, True, iter_times
-
+        
         if self.parallel_threads_num == 1:
             for order, selected_players in enumerate(selected_coalitions):
                 self.GT_RE_parallelable_thread(selected_players, results)
@@ -323,12 +326,13 @@ class Shapley():
                 self.threads_controller('finish')
         return phi_t, False, iter_times
 
+
     def RE(self, **kwargs):
         results = queue.Queue()
         permutation, full_sample, iter_times = self.sampler.sample()
         if full_sample:
             return results, True, iter_times
-
+        
         if self.parallel_threads_num == 1:
             for order, _ in enumerate(permutation):
                 self.GT_RE_parallelable_thread(permutation[:order+1], results)
@@ -361,8 +365,8 @@ class Shapley():
                 base_comp_func = self.CP
         else:
             base_comp_func = self.argorithm
-
-        # algorithm start
+        
+        # algorithm start 
         results = None
         full_sample = False
         iter_times = 0
