@@ -31,7 +31,7 @@ class Output():
         SVs, SVs_var, utility_comp_times, time_cost = self.aggregator.aggregate(
             results, iter_times, self.task_total_utility, self.task_emptySet_utility)
         if not full_sample:
-            if not self.checker.convergence_check(SVs):
+            if not self.checker.convergence_check(SVs_var):
                 print(f'Iteration {iter_times} done:')
                 print(f"Current SV: {SVs}")
                 print(
@@ -74,6 +74,8 @@ class Aggregator():
 
         if self.algo == 'RE':
             self.utilities = {0: 0}
+            self.z_RE = np.array(
+                [0 for _ in range(self.player_num)]).reshape(1, -1)
             self.A_RE = np.zeros((self.player_num, self.player_num))
             for i in range(self.player_num):
                 for j in range(self.player_num):
@@ -86,15 +88,13 @@ class Aggregator():
                             sum([(k-1)/(self.player_num-k) for k in range(2, self.player_num)]) / \
                             sum([1/k/(self.player_num-k)
                                 for k in range(1, self.player_num)])
-            self.z_RE = np.array(
-                [0 for _ in range(self.player_num)]).reshape(1, -1)
 
         if self.algo == 'CP':
             self.num_measurement = int(self.player_num/2)
             self.y_CP = dict([(m, []) for m in range(self.num_measurement)])
-            A_CP = np.random.binomial(1, 0.5, size=(
-                self.num_measurement, self.player_num))
-            self.A_CP = 1 / np.sqrt(self.num_measurement) * (2 * A_CP - 1)
+            self.A_CP = 1 / np.sqrt(self.num_measurement) * \
+                (2 * np.random.binomial(
+                    1, 0.5, size=(self.num_measurement, self.player_num)) - 1)
             self.CP_epsilon = 0.00001
 
     def aggregate(self, results, iter_times, task_total_utility, task_emptySet_utility):
@@ -116,22 +116,23 @@ class Aggregator():
             (player_id, delta_utility, utility_comp_times, time_cost) = results.get()
             old_SV = self.SV[player_id]
             self.SV_comp_times[player_id] += 1
+            # update SV
             self.SV[player_id]  \
-                = (self.SV_comp_times[player_id]-1)*self.SV[player_id]+delta_utility/self.SV_comp_times[player_id]
+                = ((self.SV_comp_times[player_id]-1)*old_SV + delta_utility)/self.SV_comp_times[player_id]
             self.utility_comp_times += utility_comp_times
             self.time_cost += time_cost
-            print(('[%s] Player %s: delta_utility: %s, SV_bef: %s, SV_aft: %s.') % (
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                player_id, delta_utility, old_SV, self.SV[player_id]))
+
+        # update SV_var
+        for player_id in range(self.player_num):
+            self.SV_var[player_id].append(self.SV[player_id])
 
     def MLE_aggregate(self, results):
         num_comp = np.zeros(self.player_num)
         e = np.zeros(self.player_num)
         while not results.empty():
             (player_id, delta_utility, utility_comp_times, time_cost) = results.get()
-            if player_id != -1:
-                e[player_id] += delta_utility
-                num_comp[player_id] += 1
+            e[player_id] += delta_utility
+            num_comp[player_id] += 1
             self.utility_comp_times += utility_comp_times
             self.time_cost += time_cost
 
@@ -143,19 +144,19 @@ class Aggregator():
 
     def GT_aggregate(self, results, iter_times, task_total_utility):
         while not results.empty():
-            coalitions, value, utility_comp_times,  timeCost = results.get()
-            self.utilities.append(([int(player_id in coalitions)
-                                    for player_id in range(self.player_num)], value))
-            if timeCost > 0:
-                self.time_cost_per_utility_comp.append(timeCost)
+            boolean_beta, value, utility_comp_times,  timeCost = results.get()
+            self.utilities.append((boolean_beta, value))
+            self.utility_comp_times += utility_comp_times
+            self.time_cost += timeCost
 
         delta_utility = np.zeros((self.player_num, self.player_num))
         Z = 2 * sum([1/k for k in range(1, self.player_num)])
         for i in range(self.player_num):
             for j in range(i + 1, self.player_num):
                 delta_utility[i, j] \
-                    = Z/iter_times * sum([utility * (beta[i] - beta[j])
-                                          for (beta, utility) in self.utilities])
+                    = Z/len(self.utilities) * sum(
+                        [utility * (beta[i] - beta[j])
+                         for (beta, utility) in self.utilities])
                 delta_utility[j, i] = - delta_utility[i, j]
 
         # find SV by solving the feasibility problem
@@ -174,15 +175,9 @@ class Aggregator():
         MyProbLP += (sum(sv) >= task_total_utility)
         MyProbLP += (sum(sv) <= task_total_utility)
         MyProbLP.solve()
-        # status： “Not Solved”, “Infeasible”,
-        # “Unbounded”, “Undefined” or “Optimal”
-        # print("Status:", pulp.LpStatus[MyProbLP.status])
         result = dict()
         for v in MyProbLP.variables():
             result[int(v.name)] = v.varValue
-        # print('One solution for reference:', v.name, "=", v.varValue)
-        # print("F(x) = ", pulp.value(MyProbLP.objective),
-        #       self.task_total_utility)  # 输出最优解的目标函数值
 
         # update SV
         self.SV = dict([(player_id, result[player_id])
@@ -222,16 +217,19 @@ class Aggregator():
             self.SV_var[player_id].append(self.SV[player_id])
 
     def RE_aggregate(self, results, task_total_utility, task_emptySet_utility):
-        (z_i, results) = results
         while not results.empty():
-            order, value, utility_comp_times, timeCost = results.get()
-            self.utilities[len(self.z_RE)+order] = value
+            boolean_z, value, utility_comp_times, timeCost = results.get()
+            if True in np.all(self.z_RE == boolean_z, axis=1):
+                # the results has been recorded into self.z_RE and self.utilities
+                continue
+            # self.utilities[len(self.z_RE)+order] = value
+            self.utilities[len(self.z_RE)] = value
+            self.z_RE = np.concatenate((self.z_RE, np.array([boolean_z])))
             self.utility_comp_times += utility_comp_times
             self.time_cost += timeCost
 
         # regression computation
-        self.z_RE = (np.concatenate((self.z_RE, np.array(z_i)))
-                     if len(z_i) > 0 else self.z_RE)
+        self.utilities[0] = task_emptySet_utility
         b = np.zeros((self.player_num, 1))
         E_Z = 0.5*np.ones((self.player_num, 1))
         for (sample_id, z_i) in enumerate(self.z_RE):
@@ -240,11 +238,10 @@ class Aggregator():
                   E_Z * task_emptySet_utility) / len(self.z_RE)
         inv_A = np.linalg.inv(self.A_RE)
         ones = np.ones((self.player_num, 1))
-        beta = np.linalg.inv(self.A_RE).dot(
-            b-ones
-            * ((ones.T.dot(inv_A).dot(b)-task_total_utility)
-               / ones.T.dot(inv_A).dot(ones))
-        ).reshape(-1)
+        beta = np.linalg.inv(self.A_RE).dot(b-ones * (
+            (ones.T.dot(inv_A).dot(b) - task_total_utility + task_emptySet_utility) /
+            ones.T.dot(inv_A).dot(ones)
+        )).reshape(-1)
 
         # update SV
         self.SV = dict([(player_id, beta[player_id])

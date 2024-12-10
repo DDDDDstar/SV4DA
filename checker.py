@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 
 
@@ -8,24 +7,21 @@ class Checker():
         self.cache_size = cache_size
         self.threshold = threshold
 
-        self.SV_cache = []
-
-    def cache_SV(self, SVs):
-        self.SV_cache.append(copy.deepcopy(SVs))
-        return len(self.SV_cache) < self.cache_size
-
-    def convergence_check(self, SVs):
-        if self.cache_SV(SVs):
+    def convergence_check(self, SVs_var):
+        if len(SVs_var) <= 0:
+            return False
+        if len(SVs_var[0]) < self.cache_size:
             return False
 
         count = 0
         sum_ = 0
-        for SVs in self.SV_cache[-self.cache_size:-1]:
-            for (player_id, SV) in SVs.items():
+        for (player_id, _) in SVs_var.items():
+            latest_SV = SVs_var[player_id][-1]
+            for ridx in range(2, self.cache_size+1):
                 count += 1
-                latest_SV = self.SV_cache[-1][player_id]
-                sum_ += np.abs((latest_SV-SV) /
+                sum_ += np.abs((latest_SV-SVs_var[player_id][-ridx]) /
                                (latest_SV if latest_SV != 0 else 10**(-12)))
+
         convergence_diff = sum_/(count if count > 0 else 10**(-12))
         print("Current average convergence_diff (count %s): " % count,
               convergence_diff)

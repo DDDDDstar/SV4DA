@@ -59,7 +59,7 @@ class Shapley():
     # check all threads and remove dead threads
     # return the number of alive threads
     def threads_clean(self):
-        for t in self.threads[:]:
+        for t in self.threads:
             if not t.is_alive():
                 self.threads.remove(t)
         return len(self.threads)
@@ -144,7 +144,7 @@ class Shapley():
         player_id = permutation[order]
         subset = permutation[:order]
         # utility before adding the targeted player
-        bef_addition, time_cost = self.utility_function(subset)
+        bef_addition, time_cost = self.utility_computation_call(subset)
 
         if self.if_truncation(bef_addition):
             aft_addition = bef_addition
@@ -152,16 +152,15 @@ class Shapley():
                 ",".join(map(str, sorted(permutation[:order+1]))))
         else:
             # utility after adding the targeted player
-            aft_addition, time_cost1 = self.utility_function(
+            aft_addition, time_cost1 = self.utility_computation_call(
                 permutation[:order+1])
             time_cost += time_cost1
             comp_times += 1
-        results.put((player_id, aft_addition -
-                    bef_addition, comp_times, time_cost))
+        results.put((player_id, aft_addition - bef_addition,
+                     comp_times, time_cost))
 
     def MC(self, **kwargs):
         permutation, full_sample, iter_times = self.sampler.sample()
-
         results = queue.Queue()
         if full_sample:
             return results, True, iter_times
@@ -194,7 +193,7 @@ class Shapley():
                   for player_id_ in range(self.player_num)
                   if I_mq[player_id_] == 1]
         # utility before adding the targeted player
-        bef_addition, time_cost = self.utility_function(subset)
+        bef_addition, time_cost = self.utility_computation_call(subset)
         comp_times = 1
 
         if player_id in subset:
@@ -206,21 +205,22 @@ class Shapley():
                 ",".join(map(str, sorted(list(subset)+[player_id]))))
         else:
             # utility after adding the targeted player
-            aft_addition, time_cost1 = self.utility_function(
+            aft_addition, time_cost1 = self.utility_computation_call(
                 list(subset)+[player_id])
             comp_times += 1
             time_cost += time_cost1
-        results.put((player_id, aft_addition -
-                    bef_addition, comp_times, time_cost))
+        results.put((player_id, aft_addition - bef_addition,
+                     comp_times, time_cost))
 
     # refer to paper:
     # A Multilinear Sampling Algorithm to Estimate Shapley Values
     def MLE(self, **kwargs):
-        MLE_interval = self.MLE_interval
-        MLE_M = self.MLE_M
-        iter_num = int(MLE_interval / 2) + 1  \
-            if self.sampler.sampling_strategy == 'antithetic'   \
-            else MLE_interval + 1
+        MLE_M = 2
+        MLE_interval = int(self.player_num/MLE_M)
+        iter_num = MLE_interval + 1
+        if self.sampler.sampling_strategy == 'antithetic':
+            iter_num = int(MLE_interval/2) + 1
+            MLE_M *= 2
         print(
             f'MLE iteration(with interval_{MLE_interval}) start!')
         results = queue.Queue()
@@ -248,23 +248,26 @@ class Shapley():
 
         return results, False, iter_times
 
-    def GT_parallelable_thread(self, player_id, selected_players, results):
-        u, t = self.utility_function(selected_players[-1])
-        comp_times = 1
+    def GT_RE_parallelable_thread(self, selected_players, results):
+        u, t = self.utility_computation_call(selected_players[:-1])
         if self.if_truncation(u):
-            results.put((player_id, u, comp_times, 0))
+            results.put(([int(player_id in selected_players)
+                          for player_id in range(self.player_num)],
+                         u, 1, t))
             self.truncation_coaliations.add(
                 ",".join(map(str, sorted(selected_players))))
             return
-        u, t1 = self.utility_function(selected_players)
-        comp_times += 1
-        t += t1
-        results.put((player_id, u, comp_times, t))
+        u, t = self.utility_computation_call(selected_players)
+        results.put(([int(player_id in selected_players)
+                      for player_id in range(self.player_num)],
+                     u, 1, t))
 
     def GT(self, **kwargs):
-        q_k = kwargs.get('q_k')
-        results = queue.Queue()
+        Z = 2 * sum([1/k for k in range(1, self.player_num)])
+        q_k = [1/Z*(1/k+1/(self.player_num-k))
+               for k in range(1, self.player_num)]
 
+        results = queue.Queue()
         # sampling coalitions
         selected_coalitions = []
         selected_players = []
@@ -272,27 +275,31 @@ class Shapley():
             selected_players, full_sample, iter_times = self.sampler.sample(
                 q_k, selected_players)
             if full_sample:
-                return results, True, iter_times
+                # use break here since
+                # we need to process the case with len(selected_coalitions)>0
+                break
             selected_coalitions.append(selected_players)
+
+        if full_sample and len(selected_coalitions) == 0:
+            # do not proceed to the following operations only when
+            # full_sample=True and len(selected_coalitions) ==0 happens simultaneously
+            return results, True, iter_times
 
         if self.parallel_threads_num == 1:
             for order, selected_players in enumerate(selected_coalitions):
-                self.GT_parallelable_thread(
-                    selected_coalitions[order], selected_players, results)
+                self.GT_RE_parallelable_thread(selected_players, results)
         else:
             # compute utility (speed up by multi-thread)
             for order, selected_players in enumerate(selected_coalitions):
                 thread = threading.Thread(
-                    target=self.GT_parallelable_thread,
-                    args=(selected_coalitions[order], selected_players, results))
+                    target=self.GT_RE_parallelable_thread,
+                    args=(selected_players, results))
                 self.threads_controller('add', thread)
             self.threads_controller('finish')
 
         return results, False, iter_times
 
     def CP(self, **kwargs):
-        num_measurement = int(self.player_num/2)
-
         phi_t = queue.Queue()
         permutation, full_sample, iter_times = self.sampler.sample()
         if full_sample:
@@ -316,47 +323,25 @@ class Shapley():
                 self.threads_controller('finish')
         return phi_t, False, iter_times
 
-    def RE_parallelable_thread(self, order, selected_players, results):
-        player_id = selected_players[order]
-        u, t = self.utility_function(selected_players[-1])
-        comp_times = 1
-        if self.if_truncation(u):
-            results.put((order, u, comp_times, 0))
-            self.truncation_coaliations.add(
-                ",".join(map(str, sorted(selected_players))))
-            return
-        u, t1 = self.utility_function(selected_players)
-        comp_times += 1
-        t += t1
-        results.put((order, u, comp_times, t))
-
     def RE(self, **kwargs):
-        utility_calculated_coalitions = kwargs.get('coalitions')
-
         results = queue.Queue()
         permutation, full_sample, iter_times = self.sampler.sample()
         if full_sample:
             return results, True, iter_times
-        z_i = []
-        for order, _ in enumerate(permutation):
-            if ",".join(map(str, sorted(permutation[:order+1]))) in utility_calculated_coalitions:
-                continue
 
-            z_i.append([int(player_id in permutation[:order+1])
-                        for player_id in range(self.player_num)])
-            if self.parallel_threads_num == 1:
-                self.RE_parallelable_thread(
-                    len(z_i)-1, permutation[:order+1], results)
-            else:
-                thread = threading.Thread(
-                    target=self.RE_parallelable_thread,
-                    args=(len(z_i)-1, permutation[:order+1], results))
-                self.threads_controller('add', thread)
-            utility_calculated_coalitions.add(
-                ",".join(map(str, sorted(permutation[:order]))))
-            utility_calculated_coalitions.add(
-                ",".join(map(str, sorted(permutation[:order+1]))))
-        self.threads_controller('finish')
+        if self.parallel_threads_num == 1:
+            for order, _ in enumerate(permutation):
+                self.GT_RE_parallelable_thread(permutation[:order+1], results)
+        else:
+            for odd_even in [0, 1]:
+                for order, _ in enumerate(permutation):
+                    if order % 2 != odd_even:
+                        continue
+                    thread = threading.Thread(
+                        target=self.GT_RE_parallelable_thread,
+                        args=(permutation[:order+1], results))
+                    self.threads_controller('add', thread)
+            self.threads_controller('finish')
         return results, False, iter_times
 
     def SV_calculate(self):
@@ -377,25 +362,13 @@ class Shapley():
         else:
             base_comp_func = self.argorithm
 
-        # RE paras
-        coalitions = set()
-        # GT paras
-        Z = 2 * sum([1/k for k in range(1, self.player_num)])
-        q_k = [1/Z*(1/k+1/(self.player_num-k))
-               for k in range(1, self.player_num)]
-        flag = True
+        # algorithm start
         results = None
         full_sample = False
         iter_times = 0
-        while flag or not self.output.result_process(results, full_sample, iter_times):
-            flag = False
-            if self.argorithm == 'MLE':
-                self.MLE_interval += int(self.player_num/self.MLE_M)
-                if self.sampler.sampling_strategy == 'antithetic':
-                    self.MLE_M *= 2
-
-            results, full_sample, iter_times = base_comp_func(
-                coalitions=coalitions, q_k=q_k) if not callable(self.argorithm)    \
+        while not self.output.result_process(results, full_sample, iter_times):
+            results, full_sample, iter_times = base_comp_func() \
+                if not callable(self.argorithm) \
                 else self.argorithm(self.sampler.sample())
 
         return self.output.aggregator.SV, self.output.aggregator.SV_var

@@ -31,7 +31,8 @@ class Sampler():
         return selected_players
 
     def MC_sample(self):
-        last= self.permutations[-1] if len(self.permutations) > 0 else list(range(self.player_num))
+        last = self.permutations[-1] if len(
+            self.permutations) > 0 else list(range(self.player_num))
         if self.sampling == 'random':
             permutation = self.generateRandomPermutation()
         elif self.sampling == 'antithetic':
