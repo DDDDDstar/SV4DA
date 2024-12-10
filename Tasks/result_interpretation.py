@@ -104,6 +104,9 @@ class RI():
         # print('selected_test_samples: ', self.selected_test_samples)
 
     def train_model(self):
+        if not os.path.exists('models/'):
+            os.mkdir('models/')
+            
         model_path = 'models/attribution_RI-%s.pt' % (
             (self.dataset if self.manual_seed == 42
              else (self.dataset+"-"+str(self.manual_seed)))
