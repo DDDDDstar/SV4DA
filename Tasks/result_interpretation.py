@@ -13,11 +13,9 @@ from .utils import DNNTrain, DNNTest, find_free_device
 
 
 class RI():
-    def __init__(self, dataset, manual_seed, GA, TSS):
+    def __init__(self, dataset, manual_seed):
         self.dataset = dataset
         self.manual_seed = manual_seed
-        self.GA = GA
-        self.TSS = TSS
         self.dataset_info = {
             'iris': (3, 4, 0.01, 30, 16),
             'wine': (3, 13, 0.001, 100, 16)
