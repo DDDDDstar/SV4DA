@@ -9,8 +9,8 @@ BENCHMARK = {
         'wine': (142),
     },
     'DSV': {
-        'iris': (120),
-        'wine': (142),
+        'iris': (10),
+        'wine': (10),
     },
     'FL': {
         'cifar': (10),
@@ -19,10 +19,6 @@ BENCHMARK = {
     'RI': {
         'iris': (4),
         'wine': (13),
-    },
-    'DSV': {
-        'iris': (12),
-        'wine': (14),
     }
 }
 
