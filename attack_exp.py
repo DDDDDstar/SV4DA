@@ -15,6 +15,7 @@ from output import Privacy
 from svbench import sv_calc
 from Tasks import data_valuation, result_interpretation
 
+from exp import args_parser
 
 def MIA_logRead(SV_args):
     shadowDataset, QueryDataset, inMemberDataset = [], [], []
@@ -306,7 +307,7 @@ def MIA(maxIter, num_querySample, SV_args):
     DV = data_valuation.DV(
         dataset=SV_args.dataset,
         manual_seed=SV_args.manual_seed,
-        GA=SV_args.GA, TSS=SV_args.TSS)
+        GA=SV_args.GA)
 
     dataIdx = list(DV.players.idxs)
     inMemberDataset_Size = SV_args.num_samples_each_class * \
@@ -543,8 +544,7 @@ def FIA(SV_args):
     # task = Task(SV_args) # RI task
     RI = result_interpretation.RI(
         dataset=SV_args.dataset,
-        manual_seed=SV_args.manual_seed,
-        GA=SV_args.GA, TSS=SV_args.TSS)
+        manual_seed=SV_args.manual_seed)
 
     auxiliary_index = np.random.choice(range(len(RI.Tst)),
                                        int(len(RI.Tst)/2),
@@ -632,8 +632,7 @@ def FIA_noAttackModelTrain(SV_args, random_mode='auxilliary'):
     # task = Task(SV_args) # RI task
     RI = result_interpretation.RI(
         dataset=SV_args.dataset,
-        manual_seed=SV_args.manual_seed,
-        GA=SV_args.GA, TSS=SV_args.TSS)
+        manual_seed=SV_args.manual_seed)
 
     randomTestData, auxiliary_index, \
         testSampleFeatureSV, testSampleFeatureSV_ref = FIA_logRead(SV_args)
@@ -778,64 +777,13 @@ def FIA_noAttackModelTrain(SV_args, random_mode='auxilliary'):
     return MAE
 
 
-def args_parser():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--log_file', type=str, default='',
-                        help="path of log file")
-    parser.add_argument('--num_parallel_threads', type=int, default=1,
-                        help="number of parallelThreads")
-    parser.add_argument('--manual_seed', type=int, default=42,
-                        help="random seed")
-
-    # attack parameters
-    parser.add_argument('--attack', type=str, default="FIA_U",
-                        help="{FIA_U, FIA_G, MIA}")
-    parser.add_argument('--maxIter_in_MIA', type=int, default=8)
-    parser.add_argument('--num_querySample_in_MIA', type=int, default=10)
-    parser.add_argument('--num_samples_each_class', type=int, default=4)
-
-    # dataset parameters
-    parser.add_argument('--dataset', type=str, default="mnist",
-                        help="{MNIST, Iris}")
-
-    # task parameters
-    parser.add_argument('--task', type=str, default="DV",
-                        help="{DV, FL, FA}")
-
-    # SV parameters
-    parser.add_argument('--conv_check_num', type=int, default=5,
-                        help="SV cache_size")
-    parser.add_argument('--base_algo', type=str, default="MC",
-                        help="{MC, RE, MLE, GT, CP}")
-    parser.add_argument('--convergence_threshold', type=float, default=0.05,
-                        help="approximation convergence_threshold")
-
-    parser.add_argument('--sampling_strategy', type=str, default="random",
-                        help="{random, antithetic, stratified}")
-    parser.add_argument('--optimization_strategy', type=bool, default=False,
-                        help="")
-    parser.add_argument('--TC_threshold', type=float, default=0.01,
-                        help="truncation threshold")
-
-    # SV's privacy protection parameters
-    parser.add_argument('--privacy_protection_measure', type=str, default=None,
-                        help="{None, DP, QT, DR}")
-    parser.add_argument('--privacy_protection_level', type=float, default=0.0,
-                        help="privacy_protection_level")
-
-    args = parser.parse_args()
-    return args
-
-
 if __name__ == '__main__':
     args = args_parser()
     if args.log_file != '':
         old_stdout = sys.stdout
         file = open(args.log_file, 'w')
         sys.stdout = file
-    print('Experiment arguemtns: ', args)
-
+        
     if args.attack == 'MIA':
         MIA(args.maxIter_in_MIA, args.num_querySample_in_MIA, args)
     elif args.attack == 'FIA':
@@ -851,9 +799,3 @@ if __name__ == '__main__':
               'has not yet been considered in attack experiments!')
         sys.exit()
 
-    # Task terminated!
-    sys.stdout.flush()
-    if args.log_file != '':
-        sys.stdout = old_stdout
-        file.close()
-    sys.exit()
