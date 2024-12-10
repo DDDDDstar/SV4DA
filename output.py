@@ -29,7 +29,7 @@ class Output():
         if results is None:
             return False
         SVs, SVs_var, utility_comp_times, time_cost = self.aggregator.aggregate(
-            results, iter_times, self.task_total_utility, self.task_emptySet_utility)
+            results, self.task_total_utility, self.task_emptySet_utility)
         if not full_sample:
             if not self.checker.convergence_check(SVs_var):
                 print(f'Iteration {iter_times} done:')
@@ -95,15 +95,15 @@ class Aggregator():
                     1, 0.5, size=(self.num_measurement, self.player_num)) - 1)
             self.CP_epsilon = 0.00001
 
-    def aggregate(self, results, iter_times, task_total_utility, task_emptySet_utility):
+    def aggregate(self, results, task_total_utility, task_emptySet_utility):
         if self.algo == 'MC':
             self.MC_aggregate(results)
         elif self.algo == 'MLE':
             self.MLE_aggregate(results)
         elif self.algo == 'GT':
-            self.GT_aggregate(results, iter_times, task_total_utility)
+            self.GT_aggregate(results, task_total_utility)
         elif self.algo == 'CP':
-            self.CP_aggregate(results, iter_times, task_total_utility)
+            self.CP_aggregate(results, task_total_utility)
         elif self.algo == 'RE':
             self.RE_aggregate(results, task_total_utility,
                               task_emptySet_utility)
@@ -146,7 +146,7 @@ class Aggregator():
         for player_id in range(self.player_num):
             self.SV_var[player_id].append(self.SV[player_id])
 
-    def GT_aggregate(self, results, iter_times, task_total_utility):
+    def GT_aggregate(self, results, task_total_utility):
         while not results.empty():
             boolean_beta, value, utility_comp_times,  timeCost = results.get()
             self.utilities.append((boolean_beta, value))
@@ -189,7 +189,7 @@ class Aggregator():
         for player_id in range(self.player_num):
             self.SV_var[player_id].append(self.SV[player_id])
 
-    def CP_aggregate(self, results, iter_times, task_total_utility):
+    def CP_aggregate(self, results, task_total_utility):
         phi_t = dict()
         while not results.empty():
             (player_id, delta_utility, utility_comp_times, time_cost) = results.get()
@@ -201,7 +201,7 @@ class Aggregator():
                 sum([self.A_CP[m, player_id]*phi for (player_id, phi) in phi_t.items()]))
         y_mean = np.zeros(self.num_measurement)
         for m in range(len(self.y_CP)):
-            y_mean[m] = 1/iter_times * sum(self.y_CP[m][:iter_times])
+            y_mean[m] = np.mean(self.y_CP[m])
         sv_mean = task_total_utility/self.player_num
         fun = lambda sv_variance : np.linalg.norm(sv_variance, ord=1) 
         cons = (
