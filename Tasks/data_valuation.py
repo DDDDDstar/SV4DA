@@ -11,7 +11,7 @@ class DV():
     def __init__(self, dataset, manual_seed, GA):
         self.GA = GA
         self.dataset_info = {
-            'iris': (3, 4, 30, 16, 0.01),
+            'iris': (3, 4, 50, 16, 0.01),
             'wine': (3, 13, 100, 16, 0.001)
         }
         self.num_classes, self.num_feature, self.ep, self.bs, self.lr  \
