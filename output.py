@@ -71,6 +71,7 @@ class Aggregator():
 
         if self.algo == 'GT':
             self.utilities = []
+            self.GT_epsilon = 0.00001
 
         if self.algo == 'RE':
             self.utilities = {0: 0}
@@ -172,9 +173,9 @@ class Aggregator():
         for i in range(self.player_num):
             for j in range(i + 1, self.player_num):
                 MyProbLP += (sv[i] - sv[j] - delta_utility[i, j]
-                             <= self.args.GT_epsilon / 2 / np.sqrt(self.player_num))
+                             <= self.GT_epsilon / 2 / np.sqrt(self.player_num))
                 MyProbLP += (sv[i] - sv[j] - delta_utility[i, j]
-                             >= - self.args.GT_epsilon / 2 / np.sqrt(self.player_num))
+                             >= - self.GT_epsilon / 2 / np.sqrt(self.player_num))
 
         print("feasible problem solving ...")
         MyProbLP += (sum(sv) >= task_total_utility)
