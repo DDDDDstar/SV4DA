@@ -84,6 +84,8 @@ class FL():
         else:
             # model initialize and training
             # FedAvg
+            if not os.path.exists('models/'):
+                os.mkdir('models/')
             print("Models generating...")
             global_model = self.model_initiation()
             loss_func = torch.nn.CrossEntropyLoss()
