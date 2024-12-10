@@ -1,17 +1,12 @@
 import threading
-import sys
-import os
 import math
-import numpy as np
-import portalocker
 import time
-from collections import namedtuple
-
+import sys
 from Tasks import data_valuation, federated_learning, result_interpretation, dataset_valuation
 from calculator import Shapley
 from sampler import Sampler
 from output import Output
-from config import config, BENCHMARK, OUT_PRINT_FLUSH_INTERVAL
+from config import config, BENCHMARK#, OUT_PRINT_FLUSH_INTERVAL
 
 
 class SVBench():
@@ -96,7 +91,7 @@ class SVBench():
             return DSV.utility_computation
         else:
             return utility_function_api
-
+    '''
     def printFlush(self):
         while True:
             time.sleep(OUT_PRINT_FLUSH_INTERVAL)
@@ -106,7 +101,7 @@ class SVBench():
         thread = threading.Thread(target=self.printFlush)
         thread.daemon = True
         thread.start()
-
+    '''
     def pre_exp_statistic(self):
         print('【Problem Scale of SV Computation】')
         print('Total number of players: ', self.player_num)
@@ -129,11 +124,11 @@ class SVBench():
         print('The task\'s total utility: ', utility)
 
     def run(self):
-        self.run_print_flush_thread()
-
+        #self.run_print_flush_thread()
         self.pre_exp_statistic()
-
-        return self.shapley.SV_calculate()
+        computing_results = self.shapley.SV_calculate()
+        sys.stdout.flush()
+        return computing_results
 
 
 def sv_calc(**kwargs):
