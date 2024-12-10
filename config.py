@@ -31,7 +31,7 @@ def para_set(args):
     user_required = ['utility_function', 'player_num']
     paras = {'log_file': 'std',
              'utility_record_file': '',
-             'optimization_strategy': None,
+             'optimization_strategy': '',
              'TC_threshold': 0.01,
              'conv_check_num': 5,
              'base_algo': 'MC',
