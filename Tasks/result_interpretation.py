@@ -17,7 +17,7 @@ class RI():
         self.dataset = dataset
         self.manual_seed = manual_seed
         self.dataset_info = {
-            'iris': (3, 4, 0.01, 30, 16),
+            'iris': (3, 4, 0.01, 100, 16),
             'wine': (3, 13, 0.001, 100, 16)
         }
         self.num_classes, self.num_feature, self.lr, self.ep, self.bs = self.dataset_info[
