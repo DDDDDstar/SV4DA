@@ -355,10 +355,13 @@ def data_prepare(manual_seed, dataset, num_classes, data_allocation=0, num_train
     trn_len = len(dataset_train)
     tst_len = len(dataset_test)
 
-    if os.path.exists('data/%s%s/' % (dataset, data_allocation)) == False:
-        os.makedirs('data/%s%s/' % (dataset, data_allocation))
+    if os.path.exists('./data/') == False:
+        os.makedirs('./data/')
+    if os.path.exists('./data/%s%s/' % (dataset, data_allocation)) == False:
+        os.makedirs('./data/%s%s/' % (dataset, data_allocation))
+        
     for idx in range(num_trainDatasets):
-        filename = 'data/%s%s/train%s.pt' % (dataset, data_allocation, idx)
+        filename = './data/%s%s/train%s.pt' % (dataset, data_allocation, idx)
         if type(dataset_train) == ImageDataset:
             trainset = dataset_train
             trainset.idxs = dict_workers[idx]
@@ -373,7 +376,7 @@ def data_prepare(manual_seed, dataset, num_classes, data_allocation=0, num_train
         print('Trainset %s: data_size %s %s...' % (
             idx, len(dict_workers[idx]), len(trainset)))
 
-    test_dataset_path = 'data/%s%s/test.pt' % (dataset, data_allocation)
+    test_dataset_path = './data/%s%s/test.pt' % (dataset, data_allocation)
     test_idxs = list(set(range(len(dataset_test)))-set(validation_index))
     if type(dataset_train) == ImageDataset:
         testset = dataset_test
