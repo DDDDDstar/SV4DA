@@ -115,7 +115,7 @@ class SVBench():
             utility = self.utility_function(range(player_idx))
             time_cost = time.time() - start_time
             print(
-                f'Computing utility with {player_idx + 1} players tasks {time_cost} timeCost {utility} utility...')
+                f'Computing utility with {player_idx + 1} players takes {time_cost} timeCost with utility equal to {utility}...')
             utility_computation_timecost[player_idx] = time_cost
 
         print('Average time cost for computing utility:',
