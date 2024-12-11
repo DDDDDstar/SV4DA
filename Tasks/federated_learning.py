@@ -76,8 +76,9 @@ class FL():
                     tmp_model = self.model_initiation()
                     tmp_model.load_state_dict(local_model)
                     DNNTest(tmp_model, self.Tst,
-                            recordSkippableSample=(self.skippable_test_sample[ridx],
-                                                   player_idx))
+                            record_skippable_sample=(
+                                self.skippable_test_sample[ridx],
+                                player_idx))
                 # aggregation
                 agg_results = self.weighted_avg(localUpdates, p_k)
                 global_model.load_state_dict(agg_results)
@@ -121,14 +122,17 @@ class FL():
                     tmp_model = self.model_initiation()
                     tmp_model.load_state_dict(local_model)
                     DNNTest(tmp_model, self.Tst,
-                            recordSkippableSample=(self.skippable_test_sample[ridx],
-                                                   player_idx))
+                            record_skippable_sample=(
+                                self.skippable_test_sample[ridx],
+                                player_idx))
 
                 # aggregation
                 agg_results = self.weighted_avg(localUpdates, p_k)
                 global_model.load_state_dict(agg_results)
                 print(f'Round {ridx} time cost: {time.time()-start_time}')
-
+        print('skippable_test_sample: ', self.skippable_test_sample)
+        
+        
     def weighted_avg(self, w_locals, p_k):
         parameter_keys = list(w_locals.values())[0].keys()
         idx_keys = list(w_locals.keys())
